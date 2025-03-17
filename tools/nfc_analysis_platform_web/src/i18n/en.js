@@ -77,7 +77,8 @@ export default {
       retry: 'Retry',
       errorLoading: 'Failed to load devices',
       autoSelect: 'Auto-select device',
-      serialDevice: 'Serial Device'
+      serialDevice: 'Serial Device',
+      deviceNotFound: 'Flipper Zero device not found'
     },
     status: {
       title: 'Status',
@@ -96,6 +97,9 @@ export default {
       content: 'Template Content',
       use: 'View',
       detail: 'Template Details',
+      loading: 'Loading templates...',
+      empty: 'No templates available',
+      loadError: 'Failed to load templates'
     },
     grid: {
       scanning: 'Scanning for NFC cards...',

@@ -191,7 +191,13 @@ const refreshDevices = async () => {
       });
     } else {
       console.error('API返回错误:', response.data.message, '错误代码:', response.data.code);
-      error.value = response.data.message || t('nard.deviceSelector.errorLoading');
+      
+      // 根据错误码或消息使用对应的翻译
+      if (response.data.message === '未找到Flipper Zero设备' || response.data.code === 404) {
+        error.value = t('nard.deviceSelector.deviceNotFound');
+      } else {
+        error.value = response.data.message || t('nard.deviceSelector.errorLoading');
+      }
       
       // 无论错误代码是什么，当API返回错误时，都清空设备列表并更新状态
       console.log('API返回错误，清空设备列表');

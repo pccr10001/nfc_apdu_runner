@@ -77,7 +77,8 @@ export default {
       retry: '重试',
       errorLoading: '加载设备失败',
       autoSelect: '自动选择设备',
-      serialDevice: '串口设备'
+      serialDevice: '串口设备',
+      deviceNotFound: '未找到Flipper Zero设备'
     },
     status: {
       title: '状态',
@@ -96,6 +97,9 @@ export default {
       content: '内容',
       use: '查看',
       detail: '模板详情',
+      loading: '正在加载模板...',
+      empty: '暂无可用模板',
+      loadError: '加载模板失败'
     },
     grid: {
       scanning: '正在扫描 NFC 卡片...',
