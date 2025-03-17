@@ -133,7 +133,11 @@ const startThumbTop = ref(0);
 
 // 是否显示滚动条
 const showScrollbar = computed(() => {
-  return props.maxHeight !== null;
+  // 只有当设置了最大高度且内容高度超过容器高度时才显示滚动条
+  if (!props.maxHeight || !gridContent.value) return false;
+  
+  const { scrollHeight, clientHeight } = gridContent.value;
+  return scrollHeight > clientHeight;
 });
 
 // 更新滚动条位置和大小
@@ -142,11 +146,18 @@ const updateScrollbar = () => {
   
   const { scrollHeight, clientHeight, scrollTop } = gridContent.value;
   
-  // 计算滑块大小
+  // 只有当内容高度超过容器高度时才显示滚动条
+  if (scrollHeight <= clientHeight) return;
+  
+  // 计算滑块大小（百分比）
   thumbSize.value = Math.max(10, (clientHeight / scrollHeight) * 100);
   
-  // 计算滑块位置
-  thumbPosition.value = (scrollTop / (scrollHeight - clientHeight)) * (100 - thumbSize.value);
+  // 计算滑块位置（百分比）
+  if (scrollHeight === clientHeight) {
+    thumbPosition.value = 0;
+  } else {
+    thumbPosition.value = (scrollTop / (scrollHeight - clientHeight)) * (100 - thumbSize.value);
+  }
 };
 
 // 开始拖动
@@ -205,15 +216,47 @@ const onScroll = () => {
 
 // 组件挂载时
 onMounted(() => {
-  gridContent.value = document.querySelector('.grid-content');
-  
-  if (gridContent.value) {
-    gridContent.value.addEventListener('scroll', onScroll);
-    updateScrollbar();
+  // 使用$el获取组件的DOM元素，然后查找.grid-content
+  setTimeout(() => {
+    gridContent.value = document.querySelector('.grid-content');
+    
+    if (gridContent.value) {
+      gridContent.value.addEventListener('scroll', onScroll);
+      // 初始化后延迟更新滚动条，确保内容已渲染
+      setTimeout(updateScrollbar, 200);
+    }
+    
+    // 监听窗口大小变化
+    window.addEventListener('resize', () => {
+      setTimeout(updateScrollbar, 100);
+    });
+  }, 0);
+});
+
+// 监听内容变化
+const contentObserver = ref(null);
+
+// 监听内容变化
+watch(() => props.loading, (newVal, oldVal) => {
+  if (oldVal && !newVal) {
+    // 从加载状态变为非加载状态时，延迟更新滚动条
+    setTimeout(() => {
+      updateScrollbar();
+      
+      // 设置内容观察器，监听内容变化
+      if (gridContent.value && !contentObserver.value) {
+        contentObserver.value = new MutationObserver(() => {
+          updateScrollbar();
+        });
+        
+        contentObserver.value.observe(gridContent.value, {
+          childList: true,
+          subtree: true,
+          attributes: true
+        });
+      }
+    }, 300);
   }
-  
-  // 监听窗口大小变化
-  window.addEventListener('resize', updateScrollbar);
 });
 
 // 组件卸载时
@@ -222,17 +265,14 @@ onUnmounted(() => {
     gridContent.value.removeEventListener('scroll', onScroll);
   }
   
+  // 断开内容观察器
+  if (contentObserver.value) {
+    contentObserver.value.disconnect();
+  }
+  
   window.removeEventListener('resize', updateScrollbar);
   document.removeEventListener('mousemove', onDrag);
   document.removeEventListener('mouseup', stopDrag);
-});
-
-// 监听 loading 状态变化
-watch(() => props.loading, (newVal) => {
-  if (!newVal) {
-    // 加载完成后更新滚动条
-    setTimeout(updateScrollbar, 100);
-  }
 });
 </script>
 
