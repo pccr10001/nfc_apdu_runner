@@ -202,60 +202,109 @@ const loadTemplates = async () => {
   error.value = '';
   
   try {
-    // 模拟加载过程，实际应用中应该调用 API
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // 调用API获取模板列表
+    const response = await axios.get('/api/nard/formats');
+    console.log('获取模板列表响应:', response.data);
     
-    // 模拟数据
-    templates.value = [
-      {
-        id: 'EMV.apdufmt',
-        title: 'EMV',
-        content: 'EMV Card Information\nApplication Label: {O[1]TAG(50), "ascii"}\nCard Number: {O[3]TAG(9F6B)[0:16], "numeric"}\nExpiry Date: Year: 20{O[3]TAG(9F6B)[17:19], "numeric"}, Month: {O[3]TAG(9F6B)[19:21], "numeric"}',
-        theme: 'blue'
-      },
-      {
-        id: 'PBOC.apdufmt',
-        title: 'PBOC',
-        content: 'PBOC\nCardNumber:{O[2][8:27]}\nName:{O[3]TAG(5f20), "utf-8"}',
-        theme: 'red'
-      },
-      {
-        id: 'TRAVEL_CARD_SH.apdufmt',
-        title: 'TRAVEL_CARD_SH',
-        content: '交通联合公交卡（上海）\n卡号:{O[1]TAG(9f0c)[21:40]}\n有效时间:{O[1]TAG(9f0c)[40:44]}.{O[1]TAG(9f0c)[44:46]}.{O[1]TAG(9f0c)[46:48]}-{O[1]TAG(9f0c)[48:52]}.{O[1]TAG(9f0c)[52:54]}.{O[1]TAG(9f0c)[54:56]}',
-        theme: 'green'
-      },
-      {
-        id: 'MIFARE_CLASSIC.apdufmt',
-        title: 'MIFARE_CLASSIC',
-        content: 'MIFARE Classic Card\nUID: {O[0][0:8]}\nManufacturer: {O[0][8:10]}\nCard Type: {O[0][10:12]}',
-        theme: 'purple'
-      }
-    ];
+    if (response.data.code === 0) {
+      // 处理API返回的模板列表
+      const formatTemplates = response.data.data || [];
+      
+      // 将API返回的数据转换为组件需要的格式
+      templates.value = formatTemplates.map((template, index) => {
+        // 为不同模板分配不同的主题颜色
+        const themes = ['blue', 'red', 'green', 'purple', 'yellow', 'cyan', 'orange', 'pink', 'indigo', 'teal'];
+        const theme = themes[index % themes.length];
+        
+        return {
+          id: template.id,
+          title: template.name || template.id.replace(/\.apdufmt$/, ''),
+          // 初始时不加载内容，选中或查看时再加载
+          content: '',
+          path: template.path,
+          theme: theme
+        };
+      });
+      
+      // 重置选中状态
+      selectedTemplateIndex.value = -1;
+      selectedTemplateData.value = null;
+    } else {
+      // 处理API错误
+      error.value = response.data.message || t('nard.templates.loadError');
+    }
   } catch (err) {
-    console.error('Failed to load templates:', err);
+    console.error('加载模板失败:', err);
     error.value = t('nard.templates.loadError');
   } finally {
     isLoading.value = false;
   }
 };
 
+// 获取模板详情
+const getTemplateContent = async (templateId) => {
+  try {
+    // 调用API获取模板内容
+    const response = await axios.get(`/api/nard/formats/${templateId}`);
+    console.log('获取模板内容响应:', response.data);
+    
+    if (response.data.code === 0) {
+      // 返回API获取的模板内容
+      return response.data.data.content || '';
+    } else {
+      console.error('获取模板内容失败:', response.data.message);
+      return '';
+    }
+  } catch (err) {
+    console.error('获取模板内容失败:', err);
+    return '';
+  }
+};
+
 // 选择模板
-const selectTemplate = (index) => {
+const selectTemplate = async (index) => {
   if (index >= 0 && index < templates.value.length) {
     selectedTemplateIndex.value = index;
+    
+    // 获取选中模板的ID
+    const templateId = templates.value[index].id;
+    
+    // 获取模板内容
+    const content = await getTemplateContent(templateId);
+    
+    // 更新模板内容
+    if (content) {
+      templates.value[index].content = content;
+    }
+    
+    // 更新选中的模板数据
     selectedTemplateData.value = { ...templates.value[index] };
-    console.log('Selected template:', selectedTemplateData.value);
+    console.log('选中模板:', selectedTemplateData.value);
   }
 };
 
 // 查看模板详情
-const viewTemplateDetails = (index) => {
+const viewTemplateDetails = async (index) => {
   if (index >= 0 && index < templates.value.length) {
     selectedTemplateIndex.value = index;
+    
+    // 获取选中模板的ID
+    const templateId = templates.value[index].id;
+    
+    // 获取模板内容
+    const content = await getTemplateContent(templateId);
+    
+    // 更新模板内容
+    if (content) {
+      templates.value[index].content = content;
+    }
+    
+    // 更新选中的模板数据
     selectedTemplateData.value = { ...templates.value[index] };
+    
+    // 显示详情对话框
     showTemplateDetails.value = true;
-    console.log('Viewing template details:', selectedTemplateData.value);
+    console.log('查看模板详情:', selectedTemplateData.value);
   }
 };
 
