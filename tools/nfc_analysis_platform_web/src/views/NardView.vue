@@ -4,7 +4,7 @@
     <p class="text-ark-text-secondary mb-6">{{ t('nard.description') }}</p>
     
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- 左侧设备选择器 -->
+      <!-- 左侧设备选择器和响应文件列表 -->
       <div class="lg:col-span-1">
         <FlipperDeviceSelector 
           :title="t('nard.deviceSelector.title')"
@@ -27,6 +27,20 @@
               {{ getStatusText() }}
             </span>
           </div>
+        </div>
+        
+        <!-- 响应文件列表 -->
+        <div class="mt-6">
+          <FlipperResponseFileList
+            ref="responseFileList"
+            :title="t('nard.responseFiles.title')"
+            :devicePath="selectedDevice ? selectedDevice.path : ''"
+            :serialPort="selectedDevice ? selectedDevice.serial_port : ''"
+            :useSerial="selectedDevice ? selectedDevice.is_serial : false"
+            :disabled="deviceStatus === 'no-device'"
+            @file-selected="handleFileSelected"
+            @file-content-loaded="handleFileContentLoaded"
+          />
         </div>
       </div>
       
@@ -62,6 +76,14 @@
             >
             </NfcCard>
           </NfcCardGrid>
+        </div>
+        
+        <!-- 响应文件内容和解析结果 -->
+        <div v-if="selectedFile" class="ark-panel p-4 mt-6">
+          <h3 class="text-lg font-medium mb-3">{{ t('nard.responseFiles.title') }}</h3>
+          <div class="bg-ark-panel rounded-lg p-3 overflow-x-auto">
+            <pre class="text-xs font-mono whitespace-pre-wrap">{{ selectedFile.content }}</pre>
+          </div>
         </div>
       </div>
     </div>
@@ -114,6 +136,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import FlipperDeviceSelector from '../components/FlipperDeviceSelector.vue';
+import FlipperResponseFileList from '../components/FlipperResponseFileList.vue';
 import NfcCard from '../components/NfcCard.vue';
 import NfcCardGrid from '../components/NfcCardGrid.vue';
 import axios from 'axios';
@@ -129,8 +152,10 @@ const templates = ref([]);
 const selectedTemplateIndex = ref(-1);
 const showTemplateDetails = ref(false);
 const selectedTemplateData = ref(null); // 存储选中的模板完整信息
-const deviceStatus = ref('no-device'); // 新增：设备状态
+const deviceStatus = ref('no-device'); // 设备状态
 const templateGrid = ref(null); // 引用NfcCardGrid组件
+const responseFileList = ref(null); // 引用FlipperResponseFileList组件
+const selectedFile = ref(null); // 存储选中的响应文件
 
 // 计算属性
 const selectedTemplate = computed(() => {
@@ -142,38 +167,51 @@ const selectedTemplate = computed(() => {
 
 // 处理设备选择
 const handleDeviceSelected = (device) => {
-  console.log('设备选择变更:', device ? device.id : 'null');
   selectedDevice.value = device;
   error.value = '';
+  
+  // 如果设备变更，刷新响应文件列表
+  if (responseFileList.value) {
+    // 无论是选择了设备还是自动选择，都刷新文件列表
+    responseFileList.value.refreshFiles();
+  }
 };
 
 // 处理设备状态变更
 const handleDeviceStatusChanged = (status) => {
-  console.log('设备状态变更:', status, '当前选中设备:', selectedDevice.value ? selectedDevice.value.id : 'null');
-  console.log('变更前状态:', deviceStatus.value);
-  
   // 先更新状态
   deviceStatus.value = status;
   
   // 根据状态更新选中设备
   if (status === 'no-device') {
     // 如果状态为"无设备"，清空选中的设备
-    console.log('收到无设备状态，清空选中设备');
     selectedDevice.value = null;
     // 同时清除可能的错误信息
     error.value = '';
+    // 清空文件列表
+    if (responseFileList.value) {
+      responseFileList.value.clearFiles();
+      selectedFile.value = null;
+    }
   } else if (status === 'available') {
     // 如果状态为"可用"但没有选中设备或选中的不是auto，设置为自动选择
     if (!selectedDevice.value || selectedDevice.value.id !== 'auto') {
-      console.log('设备可用状态，设置为自动选择');
       selectedDevice.value = { id: 'auto', name: t('nard.deviceSelector.autoSelect') };
     }
     // 同时清除可能的错误信息
     error.value = '';
   }
-  
-  console.log('变更后状态:', deviceStatus.value, '选中设备:', selectedDevice.value ? selectedDevice.value.id : 'null');
-  console.log('状态文本:', getStatusText());
+};
+
+// 处理文件选择
+const handleFileSelected = (file) => {
+  selectedFile.value = file;
+};
+
+// 处理文件内容加载完成
+const handleFileContentLoaded = (content) => {
+  // 可以在这里处理文件内容，例如解析或显示
+  console.log('文件内容加载完成，长度:', content ? content.length : 0);
 };
 
 // 获取状态文本

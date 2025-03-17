@@ -80,6 +80,16 @@ export default {
       serialDevice: 'Serial Device',
       deviceNotFound: 'Flipper Zero device not found'
     },
+    responseFiles: {
+      title: 'Response Files',
+      description: 'Select a response file from Flipper Zero to analyze',
+      loading: 'Loading files...',
+      noFiles: 'No response files found',
+      errorLoading: 'Failed to load files',
+      errorLoadingContent: 'Failed to load file content',
+      fileSize: 'Size',
+      fileDate: 'Date'
+    },
     status: {
       title: 'Status',
       ready: 'Ready',

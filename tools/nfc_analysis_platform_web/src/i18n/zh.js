@@ -80,6 +80,16 @@ export default {
       serialDevice: '串口设备',
       deviceNotFound: '未找到Flipper Zero设备'
     },
+    responseFiles: {
+      title: '响应文件',
+      description: '从Flipper Zero中选择一个响应文件进行分析',
+      loading: '正在加载文件列表...',
+      noFiles: '未找到响应文件',
+      errorLoading: '加载文件列表失败',
+      errorLoadingContent: '加载文件内容失败',
+      fileSize: '大小',
+      fileDate: '日期'
+    },
     status: {
       title: '状态',
       ready: '就绪',
