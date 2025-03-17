@@ -138,6 +138,7 @@ export default {
     },
     buttons: {
       analyze: '解析数据',
+      analyzing: '解析中...',
       clear: '清除',
       loadSample: '加载示例',
     },

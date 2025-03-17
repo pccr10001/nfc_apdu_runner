@@ -138,6 +138,7 @@ export default {
     },
     buttons: {
       analyze: 'Analyze',
+      analyzing: 'Analyzing...',
       clear: 'Clear',
       loadSample: 'Load Sample',
     },

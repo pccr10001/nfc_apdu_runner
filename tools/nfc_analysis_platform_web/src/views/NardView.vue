@@ -41,6 +41,15 @@
             @file-selected="handleFileSelected"
           />
         </div>
+        
+        <!-- 解析按钮 -->
+        <div class="mt-6">
+          <AnalyzeButton 
+            :disabled="!canAnalyze"
+            @analyze="handleAnalyze"
+            @analyzing-complete="handleAnalyzingComplete"
+          />
+        </div>
       </div>
       
       <!-- 右侧 APDU 解析模板选择 -->
@@ -131,6 +140,7 @@ import FlipperResponseFileList from '../components/FlipperResponseFileList.vue';
 import NfcCard from '../components/NfcCard.vue';
 import NfcCardGrid from '../components/NfcCardGrid.vue';
 import axios from 'axios';
+import AnalyzeButton from '../components/AnalyzeButton.vue';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -154,6 +164,16 @@ const selectedTemplate = computed(() => {
     return templates.value[selectedTemplateIndex.value];
   }
   return null;
+});
+
+// 判断是否可以进行解析
+const canAnalyze = computed(() => {
+  return (
+    deviceStatus.value !== 'no-device' && // 设备已连接
+    selectedDevice.value !== null && // 已选择设备
+    selectedFile.value !== null && // 已选择响应文件
+    selectedTemplate.value !== null // 已选择解析模板
+  );
 });
 
 // 处理设备选择
@@ -340,6 +360,23 @@ const viewTemplateDetails = async (index) => {
     showTemplateDetails.value = true;
     console.log('查看模板详情:', selectedTemplateData.value);
   }
+};
+
+// 处理解析按钮点击
+const handleAnalyze = () => {
+  console.log('开始解析数据...');
+  console.log('设备:', selectedDevice.value);
+  console.log('响应文件:', selectedFile.value);
+  console.log('解析模板:', selectedTemplate.value);
+  
+  // 这里可以添加实际的解析逻辑
+};
+
+// 处理解析完成
+const handleAnalyzingComplete = () => {
+  console.log('解析完成');
+  
+  // 这里可以添加解析完成后的处理逻辑
 };
 
 // 组件挂载时加载模板
