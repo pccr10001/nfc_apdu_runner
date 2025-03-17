@@ -117,15 +117,15 @@ const getDeviceName = (device) => {
 
 // 更新设备状态
 const updateDeviceStatus = () => {
-  if (devices.value.length === 0) {
-    deviceStatus.value = 'no-device';
-    emit('device-status-changed', 'no-device');
-  } else if (selectedDeviceId.value === 'auto') {
-    deviceStatus.value = 'available';
-    emit('device-status-changed', 'available');
-  } else {
-    deviceStatus.value = 'selected';
-    emit('device-status-changed', 'selected');
+  const oldStatus = deviceStatus.value;
+  const newStatus = devices.value.length === 0 ? 'no-device' : 
+                   (selectedDeviceId.value === 'auto' ? 'available' : 'selected');
+  
+  // 只有在状态发生变化时才更新并发送事件
+  if (oldStatus !== newStatus) {
+    console.log(`设备状态从 ${oldStatus} 变为 ${newStatus}`);
+    deviceStatus.value = newStatus;
+    emit('device-status-changed', newStatus);
   }
 };
 
@@ -134,27 +134,99 @@ const refreshDevices = async () => {
   isLoading.value = true;
   error.value = '';
   
+  console.log('开始刷新设备列表...');
+  console.log('刷新前状态:', {
+    deviceCount: devices.value.length,
+    selectedDeviceId: selectedDeviceId.value,
+    deviceStatus: deviceStatus.value
+  });
+  
   try {
+    console.log('发送API请求获取设备列表...');
     const response = await axios.get('/api/nard/flipper/devices');
+    console.log('API响应:', response.data);
     
     if (response.data.code === 0) {
-      devices.value = response.data.data || [];
+      const newDevices = response.data.data || [];
+      const oldDevicesCount = devices.value.length;
       
-      // 如果当前选中的设备不在列表中，重置为自动选择
-      if (selectedDeviceId.value !== 'auto' && 
-          !devices.value.find(d => d.id === selectedDeviceId.value)) {
+      // 更新设备列表
+      devices.value = newDevices;
+      console.log('刷新后设备列表:', devices.value);
+      
+      // 如果设备列表为空，强制重置为自动选择并更新状态
+      if (devices.value.length === 0) {
+        console.log('设备列表为空，处理无设备状态');
+        
+        // 重置选择
+        if (selectedDeviceId.value !== 'auto') {
+          console.log('重置设备选择为auto');
+          selectedDeviceId.value = 'auto';
+          emit('device-selected', { id: 'auto' });
+        }
+        
+        // 强制更新状态为无设备
+        console.log('强制更新状态为no-device');
+        deviceStatus.value = 'no-device';
+        emit('device-status-changed', 'no-device');
+      } else {
+        console.log('设备列表不为空，检查选中设备是否存在');
+        
+        // 如果当前选中的设备不在列表中，重置为自动选择
+        if (selectedDeviceId.value !== 'auto' && 
+            !devices.value.find(d => d.id === selectedDeviceId.value)) {
+          console.log('选中的设备不在列表中，重置为auto');
+          selectedDeviceId.value = 'auto';
+          emit('device-selected', { id: 'auto' });
+        }
+        
+        // 更新设备状态
+        updateDeviceStatus();
+      }
+      
+      console.log('刷新后状态:', {
+        deviceCount: devices.value.length,
+        selectedDeviceId: selectedDeviceId.value,
+        deviceStatus: deviceStatus.value
+      });
+    } else {
+      console.error('API返回错误:', response.data.message, '错误代码:', response.data.code);
+      error.value = response.data.message || t('nard.deviceSelector.errorLoading');
+      
+      // 无论错误代码是什么，当API返回错误时，都清空设备列表并更新状态
+      console.log('API返回错误，清空设备列表');
+      devices.value = [];
+      
+      // 重置选择
+      if (selectedDeviceId.value !== 'auto') {
+        console.log('重置设备选择为auto');
         selectedDeviceId.value = 'auto';
         emit('device-selected', { id: 'auto' });
       }
       
-      // 更新设备状态
-      updateDeviceStatus();
-    } else {
-      error.value = response.data.message || t('nard.deviceSelector.errorLoading');
+      // 强制更新状态为无设备
+      console.log('强制更新状态为no-device');
+      deviceStatus.value = 'no-device';
+      emit('device-status-changed', 'no-device');
+      
+      console.log('错误处理完成，最终状态:', {
+        deviceCount: devices.value.length,
+        selectedDeviceId: selectedDeviceId.value,
+        deviceStatus: deviceStatus.value
+      });
     }
   } catch (err) {
-    console.error('Failed to load Flipper devices:', err);
+    console.error('刷新设备列表失败:', err);
     error.value = t('nard.deviceSelector.errorLoading');
+    
+    // 发生错误时，清空设备列表并更新状态
+    devices.value = [];
+    selectedDeviceId.value = 'auto'; // 强制重置为自动选择
+    emit('device-selected', { id: 'auto' });
+    
+    // 强制更新状态为无设备
+    deviceStatus.value = 'no-device';
+    emit('device-status-changed', 'no-device');
   } finally {
     isLoading.value = false;
   }
@@ -170,8 +242,17 @@ const selectDevice = (device) => {
 };
 
 // 监听设备列表变化
-watch(devices, () => {
-  updateDeviceStatus();
+watch(devices, (newDevices) => {
+  console.log('设备列表变化:', newDevices.length ? '有设备' : '无设备');
+  
+  // 如果设备列表为空，强制更新状态为无设备
+  if (newDevices.length === 0 && deviceStatus.value !== 'no-device') {
+    console.log('设备列表变为空，强制更新状态为no-device');
+    deviceStatus.value = 'no-device';
+    emit('device-status-changed', 'no-device');
+  } else {
+    updateDeviceStatus();
+  }
 }, { deep: true });
 
 // 组件挂载时加载设备列表

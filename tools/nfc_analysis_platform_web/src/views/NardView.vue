@@ -138,14 +138,38 @@ const selectedTemplate = computed(() => {
 
 // 处理设备选择
 const handleDeviceSelected = (device) => {
+  console.log('设备选择变更:', device ? device.id : 'null');
   selectedDevice.value = device;
   error.value = '';
 };
 
 // 处理设备状态变更
 const handleDeviceStatusChanged = (status) => {
+  console.log('设备状态变更:', status, '当前选中设备:', selectedDevice.value ? selectedDevice.value.id : 'null');
+  console.log('变更前状态:', deviceStatus.value);
+  
+  // 先更新状态
   deviceStatus.value = status;
-  console.log('Device status changed:', status);
+  
+  // 根据状态更新选中设备
+  if (status === 'no-device') {
+    // 如果状态为"无设备"，清空选中的设备
+    console.log('收到无设备状态，清空选中设备');
+    selectedDevice.value = null;
+    // 同时清除可能的错误信息
+    error.value = '';
+  } else if (status === 'available') {
+    // 如果状态为"可用"但没有选中设备或选中的不是auto，设置为自动选择
+    if (!selectedDevice.value || selectedDevice.value.id !== 'auto') {
+      console.log('设备可用状态，设置为自动选择');
+      selectedDevice.value = { id: 'auto', name: t('nard.deviceSelector.autoSelect') };
+    }
+    // 同时清除可能的错误信息
+    error.value = '';
+  }
+  
+  console.log('变更后状态:', deviceStatus.value, '选中设备:', selectedDevice.value ? selectedDevice.value.id : 'null');
+  console.log('状态文本:', getStatusText());
 };
 
 // 获取状态文本
@@ -158,15 +182,18 @@ const getStatusText = () => {
     return t('nard.status.loading');
   }
   
-  if (deviceStatus.value === 'no-device') {
-    return t('nard.status.noDevice');
-  } else if (deviceStatus.value === 'available') {
-    return t('nard.status.deviceAvailable');
-  } else if (deviceStatus.value === 'selected') {
-    return t('nard.status.deviceSelected', { device: selectedDevice.value.name || selectedDevice.value.id });
+  switch (deviceStatus.value) {
+    case 'no-device':
+      return t('nard.status.noDevice');
+    case 'available':
+      return t('nard.status.deviceAvailable');
+    case 'selected':
+      return selectedDevice.value 
+        ? t('nard.status.deviceSelected', { device: selectedDevice.value.name || selectedDevice.value.id })
+        : t('nard.status.deviceAvailable');
+    default:
+      return t('nard.status.ready');
   }
-  
-  return t('nard.status.ready');
 };
 
 // 加载模板
