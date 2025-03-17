@@ -37,6 +37,7 @@
           <p class="text-ark-text-secondary mb-4">{{ t('nard.templates.description') }}</p>
           
           <NfcCardGrid
+            ref="templateGrid"
             :loading="isLoading"
             :error="error"
             :isEmpty="!templates.length && !isLoading && !error"
@@ -109,14 +110,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 import FlipperDeviceSelector from '../components/FlipperDeviceSelector.vue';
 import NfcCard from '../components/NfcCard.vue';
 import NfcCardGrid from '../components/NfcCardGrid.vue';
 import axios from 'axios';
 
 const { t } = useI18n();
+const route = useRoute();
 
 // 状态变量
 const selectedDevice = ref(null);
@@ -127,6 +130,7 @@ const selectedTemplateIndex = ref(-1);
 const showTemplateDetails = ref(false);
 const selectedTemplateData = ref(null); // 存储选中的模板完整信息
 const deviceStatus = ref('no-device'); // 新增：设备状态
+const templateGrid = ref(null); // 引用NfcCardGrid组件
 
 // 计算属性
 const selectedTemplate = computed(() => {
@@ -204,7 +208,6 @@ const loadTemplates = async () => {
   try {
     // 调用API获取模板列表
     const response = await axios.get('/api/nard/formats');
-    console.log('获取模板列表响应:', response.data);
     
     if (response.data.code === 0) {
       // 处理API返回的模板列表
@@ -229,6 +232,14 @@ const loadTemplates = async () => {
       // 重置选中状态
       selectedTemplateIndex.value = -1;
       selectedTemplateData.value = null;
+      
+      // 等待加载状态结束并且DOM更新后再检查滚动条，但只检查一次
+      setTimeout(async () => {
+        await nextTick();
+        if (templateGrid.value) {
+          templateGrid.value.forceCheckScrollbar();
+        }
+      }, 300);
     } else {
       // 处理API错误
       error.value = response.data.message || t('nard.templates.loadError');
@@ -309,8 +320,47 @@ const viewTemplateDetails = async (index) => {
 };
 
 // 组件挂载时加载模板
-onMounted(() => {
-  loadTemplates();
+onMounted(async () => {
+  // 先加载模板
+  await loadTemplates();
+  
+  // 监听窗口大小变化，更新滚动条
+  const handleResize = () => {
+    if (templateGrid.value) {
+      templateGrid.value.updateScrollbar();
+    }
+  };
+  
+  window.addEventListener('resize', handleResize);
+  
+  // 组件卸载时移除事件监听
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleResize);
+  });
+});
+
+// 监听模板数据变化
+watch(templates, () => {
+  if (templates.value.length > 0) {
+    // 模板数据变化且不为空，延迟更新滚动条，但只检查一次
+    setTimeout(() => {
+      if (templateGrid.value) {
+        templateGrid.value.forceCheckScrollbar();
+      }
+    }, 300);
+  }
+}, { deep: true });
+
+// 监听isLoading状态变化
+watch(isLoading, (newVal, oldVal) => {
+  if (oldVal && !newVal && templates.value.length > 0) {
+    // 加载状态结束，且有模板数据，检查滚动条，但只检查一次
+    setTimeout(() => {
+      if (templateGrid.value) {
+        templateGrid.value.forceCheckScrollbar();
+      }
+    }, 300);
+  }
 });
 </script>
 

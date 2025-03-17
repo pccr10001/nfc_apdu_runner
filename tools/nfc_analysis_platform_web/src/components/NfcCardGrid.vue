@@ -2,6 +2,7 @@
   <div 
     class="nfc-card-grid"
     :class="{ 'grid-loading': loading }"
+    ref="gridContainer"
   >
     <div v-if="loading" class="grid-loading-overlay">
       <div class="loading-spinner">
@@ -32,11 +33,16 @@
       <div class="empty-message">{{ emptyText || t('common.noData') }}</div>
     </div>
     
-    <div v-else class="grid-content" :style="gridStyle">
+    <div v-else ref="gridContent" class="grid-content" :style="gridStyle">
       <slot></slot>
     </div>
     
-    <div class="grid-scrollbar" v-if="showScrollbar && !loading && !error && !isEmpty">
+    <!-- 滚动条 -->
+    <div 
+      class="grid-scrollbar" 
+      v-if="showScrollbar"
+      :class="{ 'visible': needsScrollbar }"
+    >
       <div 
         class="scrollbar-track"
         @mousedown="startDrag"
@@ -47,6 +53,18 @@
           ref="scrollThumb"
         ></div>
       </div>
+    </div>
+    
+    <!-- 调试信息 -->
+    <div v-if="false" class="debug-info">
+      <div>showScrollbar: {{ showScrollbar }}</div>
+      <div>needsScrollbar: {{ needsScrollbar }}</div>
+      <div>loading: {{ loading }}</div>
+      <div>error: {{ error }}</div>
+      <div>isEmpty: {{ isEmpty }}</div>
+      <div>maxHeight: {{ maxHeight }}</div>
+      <div v-if="gridContent">scrollHeight: {{ gridContent.scrollHeight }}</div>
+      <div v-if="gridContent">clientHeight: {{ gridContent.clientHeight }}</div>
     </div>
   </div>
 </template>
@@ -123,6 +141,7 @@ const gridStyle = computed(() => {
 });
 
 // 滚动条相关
+const gridContainer = ref(null);
 const gridContent = ref(null);
 const scrollThumb = ref(null);
 const thumbPosition = ref(0);
@@ -130,34 +149,44 @@ const thumbSize = ref(20);
 const isDragging = ref(false);
 const startY = ref(0);
 const startThumbTop = ref(0);
+const isCheckingScrollbar = ref(false); // 新增：标记是否正在检查滚动条
 
 // 是否显示滚动条
+const needsScrollbar = ref(false);
 const showScrollbar = computed(() => {
-  // 只有当设置了最大高度且内容高度超过容器高度时才显示滚动条
-  if (!props.maxHeight || !gridContent.value) return false;
-  
-  const { scrollHeight, clientHeight } = gridContent.value;
-  return scrollHeight > clientHeight;
+  return needsScrollbar.value && props.maxHeight !== null && !props.loading && !props.error && !props.isEmpty;
 });
 
 // 更新滚动条位置和大小
 const updateScrollbar = () => {
-  if (!gridContent.value) return;
+  if (!gridContent.value || isCheckingScrollbar.value) return;
+  
+  isCheckingScrollbar.value = true;
   
   const { scrollHeight, clientHeight, scrollTop } = gridContent.value;
   
   // 只有当内容高度超过容器高度时才显示滚动条
-  if (scrollHeight <= clientHeight) return;
+  const shouldShowScrollbar = scrollHeight > clientHeight;
   
-  // 计算滑块大小（百分比）
-  thumbSize.value = Math.max(10, (clientHeight / scrollHeight) * 100);
-  
-  // 计算滑块位置（百分比）
-  if (scrollHeight === clientHeight) {
-    thumbPosition.value = 0;
-  } else {
-    thumbPosition.value = (scrollTop / (scrollHeight - clientHeight)) * (100 - thumbSize.value);
+  // 只有当状态需要变化时才更新，避免不必要的重渲染
+  if (needsScrollbar.value !== shouldShowScrollbar) {
+    needsScrollbar.value = shouldShowScrollbar;
   }
+  
+  // 如果需要显示滚动条，更新滑块大小和位置
+  if (shouldShowScrollbar) {
+    // 计算滑块大小（百分比）
+    thumbSize.value = Math.max(10, (clientHeight / scrollHeight) * 100);
+    
+    // 计算滑块位置（百分比）
+    if (scrollHeight === clientHeight) {
+      thumbPosition.value = 0;
+    } else {
+      thumbPosition.value = (scrollTop / (scrollHeight - clientHeight)) * (100 - thumbSize.value);
+    }
+  }
+  
+  isCheckingScrollbar.value = false;
 };
 
 // 开始拖动
@@ -210,43 +239,97 @@ const stopDrag = () => {
 // 监听内容滚动
 const onScroll = () => {
   if (!isDragging.value) {
+    requestAnimationFrame(updateScrollbar);
+  }
+};
+
+// 强制检查滚动条 - 优化版本
+const forceCheckScrollbar = () => {
+  if (!gridContent.value || isCheckingScrollbar.value) return;
+  
+  // 设置标志，防止重复检查
+  isCheckingScrollbar.value = true;
+  
+  // 获取内容尺寸
+  const { scrollHeight, clientHeight } = gridContent.value;
+  
+  // 如果内容高度为0，可能是内容还未渲染完成
+  if (scrollHeight === 0 || clientHeight === 0) {
+    isCheckingScrollbar.value = false;
+    // 只设置一个延迟检查，避免多次检查
+    setTimeout(forceCheckScrollbar, 300);
+    return;
+  }
+  
+  // 确定是否需要滚动条
+  const shouldShowScrollbar = scrollHeight > clientHeight;
+  
+  // 只有当状态需要变化时才更新，避免不必要的重渲染
+  if (needsScrollbar.value !== shouldShowScrollbar) {
+    needsScrollbar.value = shouldShowScrollbar;
+  }
+  
+  // 如果需要滚动条，更新滑块大小和位置
+  if (shouldShowScrollbar) {
     updateScrollbar();
   }
+  
+  isCheckingScrollbar.value = false;
 };
 
 // 组件挂载时
 onMounted(() => {
-  // 使用$el获取组件的DOM元素，然后查找.grid-content
+  // 初始化后检查一次滚动条，不再使用多次检查
   setTimeout(() => {
-    gridContent.value = document.querySelector('.grid-content');
-    
     if (gridContent.value) {
+      // 添加滚动事件监听
       gridContent.value.addEventListener('scroll', onScroll);
-      // 初始化后延迟更新滚动条，确保内容已渲染
-      setTimeout(updateScrollbar, 200);
+      // 检查滚动条
+      forceCheckScrollbar();
+    }
+  }, 300);
+  
+  // 监听窗口大小变化
+  const handleResize = () => {
+    setTimeout(forceCheckScrollbar, 200);
+  };
+  
+  window.addEventListener('resize', handleResize);
+  
+  // 组件卸载时
+  onUnmounted(() => {
+    if (gridContent.value) {
+      gridContent.value.removeEventListener('scroll', onScroll);
     }
     
-    // 监听窗口大小变化
-    window.addEventListener('resize', () => {
-      setTimeout(updateScrollbar, 100);
-    });
-  }, 0);
+    // 断开内容观察器
+    if (contentObserver.value) {
+      contentObserver.value.disconnect();
+    }
+    
+    window.removeEventListener('resize', handleResize);
+    document.removeEventListener('mousemove', onDrag);
+    document.removeEventListener('mouseup', stopDrag);
+  });
 });
 
 // 监听内容变化
 const contentObserver = ref(null);
 
-// 监听内容变化
+// 监听加载状态变化
 watch(() => props.loading, (newVal, oldVal) => {
   if (oldVal && !newVal) {
-    // 从加载状态变为非加载状态时，延迟更新滚动条
+    // 从加载状态变为非加载状态时，延迟检查滚动条，但只检查一次
+    setTimeout(forceCheckScrollbar, 300);
+    
+    // 设置内容观察器，监听内容变化
     setTimeout(() => {
-      updateScrollbar();
-      
-      // 设置内容观察器，监听内容变化
       if (gridContent.value && !contentObserver.value) {
         contentObserver.value = new MutationObserver(() => {
-          updateScrollbar();
+          // 内容变化时检查滚动条，但使用节流避免频繁更新
+          if (!isCheckingScrollbar.value) {
+            forceCheckScrollbar();
+          }
         });
         
         contentObserver.value.observe(gridContent.value, {
@@ -255,24 +338,30 @@ watch(() => props.loading, (newVal, oldVal) => {
           attributes: true
         });
       }
-    }, 300);
+    }, 500);
   }
 });
 
-// 组件卸载时
-onUnmounted(() => {
-  if (gridContent.value) {
-    gridContent.value.removeEventListener('scroll', onScroll);
-  }
-  
-  // 断开内容观察器
-  if (contentObserver.value) {
-    contentObserver.value.disconnect();
-  }
-  
-  window.removeEventListener('resize', updateScrollbar);
-  document.removeEventListener('mousemove', onDrag);
-  document.removeEventListener('mouseup', stopDrag);
+// 插槽内容变化方法
+const slotContentChanged = () => {
+  setTimeout(forceCheckScrollbar, 300);
+};
+
+// 暴露方法给父组件
+defineExpose({
+  updateScrollbar,
+  slotContentChanged,
+  forceCheckScrollbar
+});
+
+// 监听maxHeight变化
+watch(() => props.maxHeight, () => {
+  setTimeout(forceCheckScrollbar, 100);
+});
+
+// 监听columns变化
+watch(() => props.columns, () => {
+  setTimeout(forceCheckScrollbar, 100);
 });
 </script>
 
@@ -411,6 +500,17 @@ onUnmounted(() => {
   width: 8px;
   height: calc(100% - 8px);
   z-index: 5;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.grid-scrollbar.visible {
+  opacity: 1;
+}
+
+.grid-content:hover + .grid-scrollbar,
+.grid-scrollbar:hover {
+  opacity: 1;
 }
 
 .scrollbar-track {
@@ -463,5 +563,18 @@ onUnmounted(() => {
   .grid-content {
     grid-template-columns: 1fr;
   }
+}
+
+/* 调试信息 */
+.debug-info {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 100;
 }
 </style> 
