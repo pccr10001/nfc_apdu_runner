@@ -176,13 +176,15 @@ const updateScrollbar = () => {
   // 如果需要显示滚动条，更新滑块大小和位置
   if (shouldShowScrollbar) {
     // 计算滑块大小（百分比）
-    thumbSize.value = Math.max(10, (clientHeight / scrollHeight) * 100);
+    const sizeRatio = clientHeight / scrollHeight;
+    thumbSize.value = Math.max(10, sizeRatio * 100);
     
     // 计算滑块位置（百分比）
-    if (scrollHeight === clientHeight) {
+    if (scrollHeight <= clientHeight) {
       thumbPosition.value = 0;
     } else {
-      thumbPosition.value = (scrollTop / (scrollHeight - clientHeight)) * (100 - thumbSize.value);
+      const scrollRatio = scrollTop / (scrollHeight - clientHeight);
+      thumbPosition.value = scrollRatio * (100 - thumbSize.value);
     }
   }
   
@@ -271,7 +273,18 @@ const forceCheckScrollbar = () => {
   
   // 如果需要滚动条，更新滑块大小和位置
   if (shouldShowScrollbar) {
-    updateScrollbar();
+    // 计算滑块大小（百分比）
+    const sizeRatio = clientHeight / scrollHeight;
+    thumbSize.value = Math.max(10, sizeRatio * 100);
+    
+    // 计算滑块位置（百分比）
+    const scrollTop = gridContent.value.scrollTop;
+    if (scrollHeight <= clientHeight) {
+      thumbPosition.value = 0;
+    } else {
+      const scrollRatio = scrollTop / (scrollHeight - clientHeight);
+      thumbPosition.value = scrollRatio * (100 - thumbSize.value);
+    }
   }
   
   isCheckingScrollbar.value = false;
@@ -286,6 +299,13 @@ onMounted(() => {
       gridContent.value.addEventListener('scroll', onScroll);
       // 检查滚动条
       forceCheckScrollbar();
+      
+      // 确保滚动条尺寸正确，再次检查一次
+      setTimeout(() => {
+        if (!isCheckingScrollbar.value) {
+          forceCheckScrollbar();
+        }
+      }, 500);
     }
   }, 300);
   
@@ -337,6 +357,9 @@ watch(() => props.loading, (newVal, oldVal) => {
           subtree: true,
           attributes: true
         });
+        
+        // 确保初始状态下滚动条尺寸正确
+        setTimeout(forceCheckScrollbar, 100);
       }
     }, 500);
   }
@@ -357,11 +380,15 @@ defineExpose({
 // 监听maxHeight变化
 watch(() => props.maxHeight, () => {
   setTimeout(forceCheckScrollbar, 100);
+  // 确保滚动条尺寸正确，再次检查一次
+  setTimeout(forceCheckScrollbar, 500);
 });
 
 // 监听columns变化
 watch(() => props.columns, () => {
   setTimeout(forceCheckScrollbar, 100);
+  // 确保滚动条尺寸正确，再次检查一次
+  setTimeout(forceCheckScrollbar, 500);
 });
 </script>
 
@@ -505,12 +532,12 @@ watch(() => props.columns, () => {
 }
 
 .grid-scrollbar.visible {
-  opacity: 1;
+  opacity: 0.8;
 }
 
 .grid-content:hover + .grid-scrollbar,
 .grid-scrollbar:hover {
-  opacity: 1;
+  opacity: 1 !important;
 }
 
 .scrollbar-track {
@@ -525,14 +552,15 @@ watch(() => props.columns, () => {
 .scrollbar-thumb {
   position: absolute;
   width: 100%;
-  background-color: rgba(56, 189, 248, 0.3);
+  background-color: rgba(56, 189, 248, 0.4);
   border-radius: 4px;
   transition: background-color 0.2s ease;
+  min-height: 30px; /* 确保滑块有最小高度 */
 }
 
 .scrollbar-thumb:hover,
 .scrollbar-thumb:active {
-  background-color: rgba(56, 189, 248, 0.5);
+  background-color: rgba(56, 189, 248, 0.7);
 }
 
 /* 动画 */
