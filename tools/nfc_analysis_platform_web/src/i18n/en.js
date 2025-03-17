@@ -116,7 +116,7 @@ export default {
       ready: 'System ready',
       originalData: 'Original Response Data',
       parseResult: 'Parse Result',
-      parseSuccess: 'Parse successful',
+      success: 'Success',
       using: 'using template',
       error: 'Error'
     },

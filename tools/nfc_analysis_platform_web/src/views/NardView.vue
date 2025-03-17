@@ -516,7 +516,7 @@ const handleAnalyze = async () => {
         terminalOutput.value.clear();
         
         // 添加解析成功的消息
-        terminalOutput.value.addLines(`${t('nard.terminal.parseSuccess')}: ${selectedFile.value.name} ${t('nard.terminal.using')} ${selectedTemplate.value.title}`);
+        terminalOutput.value.addLines(`${t('nard.terminal.success')}: ${selectedFile.value.name} ${t('nard.terminal.using')} ${selectedTemplate.value.title}`);
         terminalOutput.value.addLines('------------------------');
         
         // 显示解析结果

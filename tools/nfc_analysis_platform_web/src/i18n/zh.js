@@ -116,7 +116,7 @@ export default {
       ready: '系统就绪',
       originalData: '原始响应数据',
       parseResult: '解析结果',
-      parseSuccess: '解析成功',
+      success: '成功',
       using: '使用模板',
       error: '错误'
     },

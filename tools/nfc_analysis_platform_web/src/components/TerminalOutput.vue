@@ -20,9 +20,9 @@
           <span class="prompt">{{ prompt }}</span>
           <span class="line-content" v-html="formatLine(line.text)"></span>
         </div>
-        <div class="terminal-line cursor-line" v-if="showCursor">
+        <div class="terminal-line cursor-line">
           <span class="prompt">{{ prompt }}</span>
-          <span class="cursor"></span>
+          <span class="cursor" v-if="showCursor"></span>
         </div>
       </div>
     </div>
@@ -54,11 +54,24 @@ const showCursor = ref(true);
 
 // 格式化行内容，处理特殊标记
 const formatLine = (text) => {
-  // 高亮关键词
-  let formattedText = text
-    .replace(/error|错误/gi, '<span class="highlight-error">$&</span>')
-    .replace(/success|成功/gi, '<span class="highlight-success">$&</span>')
-    .replace(/warning|警告/gi, '<span class="highlight-warning">$&</span>')
+  if (!text) return '';
+  
+  // 处理换行符，将其转换为HTML的换行
+  // 注意：需要处理字符串中的实际换行符和转义的\n
+  let formattedText = String(text)
+    .replace(/\\n/g, '<br>') // 处理转义的\n
+    .replace(/\n/g, '<br>'); // 处理实际的换行符
+  
+  // 保留连续空格
+  formattedText = formattedText.replace(/ {2,}/g, match => {
+    return '&nbsp;'.repeat(match.length);
+  });
+  
+  // 高亮关键词，但避免将error高亮为errors
+  formattedText = formattedText
+    .replace(/\b(error|错误)\b/gi, '<span class="highlight-error">$&</span>')
+    .replace(/\b(success|成功)\b/gi, '<span class="highlight-success">$&</span>')
+    .replace(/\b(warning|警告)\b/gi, '<span class="highlight-warning">$&</span>')
     .replace(/(0x[0-9a-f]+)/gi, '<span class="highlight-hex">$&</span>')
     .replace(/(\d{2} ){5,}/g, '<span class="highlight-data">$&</span>');
   
