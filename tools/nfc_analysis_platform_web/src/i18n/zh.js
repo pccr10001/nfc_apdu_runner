@@ -81,10 +81,12 @@ export default {
     },
     status: {
       title: '状态',
-      ready: '准备就绪',
-      scanning: '正在扫描...',
+      ready: '就绪',
+      scanning: '扫描中...',
       loading: '加载中...',
-      noDevice: '未选择设备',
+      noDevice: '未检测到设备',
+      deviceAvailable: '设备可用（自动选择）',
+      deviceSelected: '已选择设备：{device}',
       connected: '已连接'
     },
     templates: {

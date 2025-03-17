@@ -9,6 +9,7 @@
         <FlipperDeviceSelector 
           :title="t('nard.deviceSelector.title')"
           @device-selected="handleDeviceSelected"
+          @device-status-changed="handleDeviceStatusChanged"
         />
         
         <div class="mt-6 ark-panel p-4">
@@ -17,9 +18,9 @@
             <div 
               class="w-3 h-3 rounded-full"
               :class="{
-                'bg-ark-green-light': selectedDevice && !error,
-                'bg-ark-red-light': error,
-                'bg-ark-yellow-light': !selectedDevice && !error
+                'bg-ark-green-light': deviceStatus === 'selected',
+                'bg-ark-yellow-light': deviceStatus === 'available',
+                'bg-ark-red-light': deviceStatus === 'no-device' || error
               }"
             ></div>
             <span class="text-sm">
@@ -125,6 +126,7 @@ const templates = ref([]);
 const selectedTemplateIndex = ref(-1);
 const showTemplateDetails = ref(false);
 const selectedTemplateData = ref(null); // 存储选中的模板完整信息
+const deviceStatus = ref('no-device'); // 新增：设备状态
 
 // 计算属性
 const selectedTemplate = computed(() => {
@@ -140,6 +142,12 @@ const handleDeviceSelected = (device) => {
   error.value = '';
 };
 
+// 处理设备状态变更
+const handleDeviceStatusChanged = (status) => {
+  deviceStatus.value = status;
+  console.log('Device status changed:', status);
+};
+
 // 获取状态文本
 const getStatusText = () => {
   if (error.value) {
@@ -150,8 +158,12 @@ const getStatusText = () => {
     return t('nard.status.loading');
   }
   
-  if (!selectedDevice.value) {
+  if (deviceStatus.value === 'no-device') {
     return t('nard.status.noDevice');
+  } else if (deviceStatus.value === 'available') {
+    return t('nard.status.deviceAvailable');
+  } else if (deviceStatus.value === 'selected') {
+    return t('nard.status.deviceSelected', { device: selectedDevice.value.name || selectedDevice.value.id });
   }
   
   return t('nard.status.ready');

@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 
@@ -88,12 +88,13 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['device-selected']);
+const emit = defineEmits(['device-selected', 'device-status-changed']);
 
 const devices = ref([]);
 const selectedDeviceId = ref('auto');
 const isLoading = ref(false);
 const error = ref('');
+const deviceStatus = ref('no-device'); // 新增：设备状态 'no-device', 'available', 'selected'
 
 // 添加自动选择选项
 const allDevices = computed(() => {
@@ -114,6 +115,20 @@ const getDeviceName = (device) => {
     : `Flipper Zero (${device.id})`);
 };
 
+// 更新设备状态
+const updateDeviceStatus = () => {
+  if (devices.value.length === 0) {
+    deviceStatus.value = 'no-device';
+    emit('device-status-changed', 'no-device');
+  } else if (selectedDeviceId.value === 'auto') {
+    deviceStatus.value = 'available';
+    emit('device-status-changed', 'available');
+  } else {
+    deviceStatus.value = 'selected';
+    emit('device-status-changed', 'selected');
+  }
+};
+
 // 刷新设备列表
 const refreshDevices = async () => {
   isLoading.value = true;
@@ -131,6 +146,9 @@ const refreshDevices = async () => {
         selectedDeviceId.value = 'auto';
         emit('device-selected', { id: 'auto' });
       }
+      
+      // 更新设备状态
+      updateDeviceStatus();
     } else {
       error.value = response.data.message || t('nard.deviceSelector.errorLoading');
     }
@@ -146,7 +164,15 @@ const refreshDevices = async () => {
 const selectDevice = (device) => {
   selectedDeviceId.value = device.id;
   emit('device-selected', device);
+  
+  // 更新设备状态
+  updateDeviceStatus();
 };
+
+// 监听设备列表变化
+watch(devices, () => {
+  updateDeviceStatus();
+}, { deep: true });
 
 // 组件挂载时加载设备列表
 onMounted(() => {

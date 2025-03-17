@@ -84,7 +84,9 @@ export default {
       ready: 'Ready',
       scanning: 'Scanning...',
       loading: 'Loading...',
-      noDevice: 'No device selected',
+      noDevice: 'No device detected',
+      deviceAvailable: 'Device available (Auto-select)',
+      deviceSelected: 'Device selected: {device}',
       connected: 'Connected'
     },
     templates: {
