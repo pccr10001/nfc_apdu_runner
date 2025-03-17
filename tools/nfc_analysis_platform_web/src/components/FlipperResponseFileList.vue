@@ -17,7 +17,7 @@
       </button>
     </div>
     
-    <div class="response-file-list-content">
+    <div class="response-file-list-content" ref="fileListContent" :class="{ 'is-scrolling': isScrolling }">
       <div v-if="isLoading" class="loading-container">
         <div class="loading-spinner"></div>
         <span>{{ t('nard.responseFiles.loading') }}</span>
@@ -74,7 +74,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 
@@ -110,6 +110,24 @@ const selectedFileId = ref('');
 const selectedFileContent = ref('');
 const isLoading = ref(false);
 const error = ref('');
+const fileListContent = ref(null); // 引用滚动容器
+const isScrolling = ref(false); // 是否正在滚动
+let scrollTimer = null; // 滚动计时器
+
+// 处理滚动事件
+const handleScroll = () => {
+  isScrolling.value = true;
+  
+  // 清除之前的计时器
+  if (scrollTimer) {
+    clearTimeout(scrollTimer);
+  }
+  
+  // 设置新的计时器，滚动停止1.5秒后隐藏滚动条
+  scrollTimer = setTimeout(() => {
+    isScrolling.value = false;
+  }, 1500);
+};
 
 // 刷新文件列表
 const refreshFiles = async () => {
@@ -250,6 +268,23 @@ onMounted(() => {
   if ((props.devicePath || props.serialPort) && !props.disabled) {
     refreshFiles();
   }
+  
+  // 添加滚动事件监听
+  if (fileListContent.value) {
+    fileListContent.value.addEventListener('scroll', handleScroll);
+  }
+});
+
+// 组件卸载时，移除滚动事件监听
+onUnmounted(() => {
+  if (fileListContent.value) {
+    fileListContent.value.removeEventListener('scroll', handleScroll);
+  }
+  
+  // 清除滚动计时器
+  if (scrollTimer) {
+    clearTimeout(scrollTimer);
+  }
 });
 
 // 暴露方法给父组件
@@ -325,6 +360,13 @@ defineExpose({
   padding: 16px;
   max-height: 300px;
   overflow-y: auto;
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: transparent rgba(22, 27, 34, 0.3); /* Firefox - 默认隐藏滑块 */
+}
+
+.response-file-list-content.is-scrolling,
+.response-file-list-content:hover {
+  scrollbar-color: rgba(56, 189, 248, 0.3) rgba(22, 27, 34, 0.3); /* Firefox - 滚动或悬停时显示 */
 }
 
 .loading-container,
@@ -446,8 +488,14 @@ defineExpose({
 }
 
 .response-file-list-content::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.3);
+  background: transparent; /* 默认透明 */
   border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+.response-file-list-content.is-scrolling::-webkit-scrollbar-thumb,
+.response-file-list-content:hover::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.3); /* 滚动或悬停时显示 */
 }
 
 .response-file-list-content::-webkit-scrollbar-thumb:hover {
