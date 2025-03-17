@@ -45,6 +45,7 @@
         <!-- 解析按钮 -->
         <div class="mt-6">
           <AnalyzeButton 
+            ref="analyzeButton"
             :disabled="!canAnalyze"
             @analyze="handleAnalyze"
             @analyzing-complete="handleAnalyzingComplete"
@@ -139,8 +140,9 @@ import FlipperDeviceSelector from '../components/FlipperDeviceSelector.vue';
 import FlipperResponseFileList from '../components/FlipperResponseFileList.vue';
 import NfcCard from '../components/NfcCard.vue';
 import NfcCardGrid from '../components/NfcCardGrid.vue';
-import axios from 'axios';
 import AnalyzeButton from '../components/AnalyzeButton.vue';
+import axios from 'axios';
+import toast from '../utils/toast.js';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -157,6 +159,7 @@ const deviceStatus = ref('no-device'); // 设备状态
 const templateGrid = ref(null); // 引用NfcCardGrid组件
 const responseFileList = ref(null); // 引用FlipperResponseFileList组件
 const selectedFile = ref(null); // 存储选中的响应文件
+const analyzeButton = ref(null); // 引用AnalyzeButton组件
 
 // 计算属性
 const selectedTemplate = computed(() => {
@@ -363,13 +366,161 @@ const viewTemplateDetails = async (index) => {
 };
 
 // 处理解析按钮点击
-const handleAnalyze = () => {
+const handleAnalyze = async () => {
   console.log('开始解析数据...');
-  console.log('设备:', selectedDevice.value);
-  console.log('响应文件:', selectedFile.value);
-  console.log('解析模板:', selectedTemplate.value);
   
-  // 这里可以添加实际的解析逻辑
+  try {
+    // 1. 重新获取设备列表
+    let deviceResponse;
+    try {
+      deviceResponse = await axios.get('/api/nard/flipper/devices');
+      if (deviceResponse.data.code !== 0) {
+        throw new Error(deviceResponse.data.message || t('nard.deviceSelector.errorLoading'));
+      }
+    } catch (err) {
+      console.error('获取设备列表失败:', err);
+      toast.error(t('nard.deviceSelector.errorLoading'));
+      // 恢复按钮状态
+      if (analyzeButton.value) {
+        analyzeButton.value.setAnalyzing(false);
+      }
+      return;
+    }
+    
+    // 检查选中的设备是否仍然存在
+    const devices = deviceResponse.data.data || [];
+    const deviceExists = selectedDevice.value.id === 'auto' || 
+                         devices.some(d => d.id === selectedDevice.value.id);
+    
+    if (!deviceExists) {
+      console.error('选中的设备不再可用');
+      toast.error(t('nard.analyze.deviceNotAvailable'));
+      
+      // 刷新设备列表
+      if (document.querySelector('.device-selector-container .refresh-button')) {
+        document.querySelector('.device-selector-container .refresh-button').click();
+      }
+      
+      // 恢复按钮状态
+      if (analyzeButton.value) {
+        analyzeButton.value.setAnalyzing(false);
+      }
+      return;
+    }
+    
+    // 2. 重新获取响应文件内容
+    let fileResponse;
+    try {
+      // 构建请求参数
+      const params = {};
+      
+      if (selectedDevice.value.path) {
+        params.device_path = selectedDevice.value.path;
+      }
+      
+      if (selectedDevice.value.serial_port) {
+        params.serial_port = selectedDevice.value.serial_port;
+      }
+      
+      // 如果是自动选择设备或明确指定了使用串口，设置use_serial=true
+      if (selectedDevice.value.is_serial || selectedDevice.value.id === 'auto') {
+        params.use_serial = true;
+      }
+      
+      fileResponse = await axios.get(`/api/nard/flipper/files/${selectedFile.value.id}`, { params });
+      if (fileResponse.data.code !== 0) {
+        throw new Error(fileResponse.data.message || t('nard.responseFiles.errorLoadingContent'));
+      }
+    } catch (err) {
+      console.error('获取响应文件内容失败:', err);
+      toast.error(t('nard.responseFiles.errorLoadingContent'));
+      
+      // 刷新文件列表
+      if (responseFileList.value) {
+        responseFileList.value.refreshFiles();
+      }
+      
+      // 恢复按钮状态
+      if (analyzeButton.value) {
+        analyzeButton.value.setAnalyzing(false);
+      }
+      return;
+    }
+    
+    // 更新文件内容
+    const fileContent = fileResponse.data.data.content || '';
+    selectedFile.value = {
+      ...selectedFile.value,
+      content: fileContent
+    };
+    
+    // 3. 重新获取模板内容
+    let templateResponse;
+    try {
+      templateResponse = await axios.get(`/api/nard/formats/${selectedTemplate.value.id}`);
+      if (templateResponse.data.code !== 0) {
+        throw new Error(templateResponse.data.message || t('nard.templates.loadError'));
+      }
+    } catch (err) {
+      console.error('获取模板内容失败:', err);
+      toast.error(t('nard.templates.loadError'));
+      
+      // 刷新模板列表
+      await loadTemplates();
+      
+      // 恢复按钮状态
+      if (analyzeButton.value) {
+        analyzeButton.value.setAnalyzing(false);
+      }
+      return;
+    }
+    
+    // 更新模板内容
+    const templateContent = templateResponse.data.data.content || '';
+    templates.value[selectedTemplateIndex.value].content = templateContent;
+    selectedTemplateData.value = { ...templates.value[selectedTemplateIndex.value] };
+    
+    // 4. 所有数据都已更新，可以进行解析
+    console.log('所有数据已更新，开始解析...');
+    console.log('设备:', selectedDevice.value);
+    console.log('响应文件:', selectedFile.value);
+    console.log('解析模板:', selectedTemplateData.value);
+    
+    // 调用解析API
+    const analyzeResponse = await axios.post('/api/nard/decode', {
+      response_data: selectedFile.value.content,
+      format_id: selectedTemplate.value.id,
+      format_content: templateContent,
+      debug: true
+    });
+    
+    if (analyzeResponse.data.code === 0) {
+      // 解析成功，处理解析结果
+      console.log('解析结果:', analyzeResponse.data.data);
+      toast.success(t('nard.analyze.success'));
+      // 这里可以添加解析成功后的处理逻辑
+    } else {
+      // 解析失败，处理错误
+      console.error('解析失败:', analyzeResponse.data.message);
+      toast.error(analyzeResponse.data.message || t('nard.analyze.error'));
+    }
+    
+    // 恢复按钮状态
+    if (analyzeButton.value) {
+      analyzeButton.value.setAnalyzing(false);
+    }
+    
+    // 触发解析完成事件
+    handleAnalyzingComplete();
+  } catch (err) {
+    console.error('解析过程中发生错误:', err);
+    toast.error(t('nard.analyze.error'));
+    
+    // 恢复按钮状态
+    if (analyzeButton.value) {
+      analyzeButton.value.setAnalyzing(false);
+    }
+  }
 };
 
 // 处理解析完成

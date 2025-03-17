@@ -149,6 +149,11 @@ export default {
       length: '长度',
       raw: '原始数据',
     },
+    analyze: {
+      success: '解析成功完成',
+      error: '解析数据失败',
+      deviceNotAvailable: '选中的设备不再可用'
+    },
   },
   system: {
     title: '系统信息',

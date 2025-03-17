@@ -76,12 +76,17 @@ const handleClick = () => {
   
   analyzing.value = true;
   emit('analyze');
+};
+
+// 设置解析状态
+const setAnalyzing = (status) => {
+  analyzing.value = status;
   
-  // 模拟解析过程，5秒后恢复
-  analyzeTimeout.value = setTimeout(() => {
-    analyzing.value = false;
-    emit('analyzing-complete');
-  }, 5000);
+  // 如果设置为false，清除定时器
+  if (!status && analyzeTimeout.value) {
+    clearTimeout(analyzeTimeout.value);
+    analyzeTimeout.value = null;
+  }
 };
 
 // 当组件销毁时清除定时器
@@ -90,6 +95,11 @@ watch(() => props.disabled, (newVal) => {
     clearTimeout(analyzeTimeout.value);
     analyzing.value = false;
   }
+});
+
+// 暴露方法给父组件
+defineExpose({
+  setAnalyzing
 });
 </script>
 

@@ -149,6 +149,11 @@ export default {
       length: 'Length',
       raw: 'Raw Data',
     },
+    analyze: {
+      success: 'Analysis completed successfully',
+      error: 'Failed to analyze data',
+      deviceNotAvailable: 'Selected device is no longer available'
+    },
   },
   system: {
     title: 'System Information',
