@@ -1,7 +1,7 @@
 <template>
   <div 
     class="nfc-card-grid"
-    :class="{ 'grid-loading': loading }"
+    :class="{ 'grid-loading': loading, 'is-scrolling': isScrolling }"
     ref="gridContainer"
   >
     <div v-if="loading" class="grid-loading-overlay">
@@ -150,6 +150,8 @@ const isDragging = ref(false);
 const startY = ref(0);
 const startThumbTop = ref(0);
 const isCheckingScrollbar = ref(false); // 新增：标记是否正在检查滚动条
+const isScrolling = ref(false); // 新增：标记是否正在滚动
+let scrollTimer = null; // 新增：滚动计时器
 
 // 是否显示滚动条
 const needsScrollbar = ref(false);
@@ -241,6 +243,19 @@ const stopDrag = () => {
 // 监听内容滚动
 const onScroll = () => {
   if (!isDragging.value) {
+    // 设置正在滚动标志
+    isScrolling.value = true;
+    
+    // 清除之前的计时器
+    if (scrollTimer) {
+      clearTimeout(scrollTimer);
+    }
+    
+    // 设置新的计时器，滚动停止1.5秒后隐藏滚动条
+    scrollTimer = setTimeout(() => {
+      isScrolling.value = false;
+    }, 1500);
+    
     requestAnimationFrame(updateScrollbar);
   }
 };
@@ -330,6 +345,11 @@ onMounted(() => {
     window.removeEventListener('resize', handleResize);
     document.removeEventListener('mousemove', onDrag);
     document.removeEventListener('mouseup', stopDrag);
+    
+    // 清除滚动计时器
+    if (scrollTimer) {
+      clearTimeout(scrollTimer);
+    }
   });
 });
 
@@ -397,6 +417,7 @@ watch(() => props.columns, () => {
   position: relative;
   width: 100%;
   height: 100%;
+  overflow: hidden; /* 确保内容不会溢出 */
 }
 
 .grid-content {
@@ -408,7 +429,8 @@ watch(() => props.columns, () => {
   overflow-y: auto;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
-  padding-right: 24px; /* 增加右侧内边距，避免与滚动条重合 */
+  margin-right: 0; /* 移除右侧边距 */
+  padding-right: 30px; /* 减少右侧内边距 */
 }
 
 .grid-content::-webkit-scrollbar {
@@ -523,8 +545,8 @@ watch(() => props.columns, () => {
 .grid-scrollbar {
   position: absolute;
   top: 4px;
-  right: 4px;
-  width: 8px;
+  right: 0;
+  width: 6px; /* 稍微减小宽度 */
   height: calc(100% - 8px);
   z-index: 5;
   opacity: 0;
@@ -532,27 +554,28 @@ watch(() => props.columns, () => {
 }
 
 .grid-scrollbar.visible {
-  opacity: 0.8;
+  opacity: 0;
 }
 
 .grid-content:hover + .grid-scrollbar,
-.grid-scrollbar:hover {
-  opacity: 1 !important;
+.grid-scrollbar:hover,
+.is-scrolling .grid-scrollbar {
+  opacity: 0.7 !important;
 }
 
 .scrollbar-track {
   position: relative;
   width: 100%;
   height: 100%;
-  background-color: rgba(33, 38, 45, 0.3);
-  border-radius: 4px;
+  background-color: rgba(33, 38, 45, 0.2);
+  border-radius: 3px 0 0 3px; /* 只在左侧添加圆角 */
   cursor: pointer;
 }
 
 .scrollbar-thumb {
   position: absolute;
   width: 100%;
-  background-color: rgba(56, 189, 248, 0.4);
+  background-color: rgba(56, 189, 248, 0.3);
   border-radius: 4px;
   transition: background-color 0.2s ease;
   min-height: 30px; /* 确保滑块有最小高度 */
@@ -560,7 +583,7 @@ watch(() => props.columns, () => {
 
 .scrollbar-thumb:hover,
 .scrollbar-thumb:active {
-  background-color: rgba(56, 189, 248, 0.7);
+  background-color: rgba(56, 189, 248, 0.5);
 }
 
 /* 动画 */
