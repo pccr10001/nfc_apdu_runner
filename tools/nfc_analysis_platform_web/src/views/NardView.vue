@@ -86,6 +86,15 @@
             </NfcCard>
           </NfcCardGrid>
         </div>
+        
+        <!-- 终端输出区域 -->
+        <div class="mt-6 ark-panel" style="height: 300px;">
+          <TerminalOutput 
+            ref="terminalOutput"
+            :title="t('nard.terminal.title')"
+            :prompt="'>'"
+          />
+        </div>
       </div>
     </div>
     
@@ -141,6 +150,7 @@ import FlipperResponseFileList from '../components/FlipperResponseFileList.vue';
 import NfcCard from '../components/NfcCard.vue';
 import NfcCardGrid from '../components/NfcCardGrid.vue';
 import AnalyzeButton from '../components/AnalyzeButton.vue';
+import TerminalOutput from '../components/TerminalOutput.vue';
 import axios from 'axios';
 import toast from '../utils/toast.js';
 
@@ -160,6 +170,7 @@ const templateGrid = ref(null); // 引用NfcCardGrid组件
 const responseFileList = ref(null); // 引用FlipperResponseFileList组件
 const selectedFile = ref(null); // 存储选中的响应文件
 const analyzeButton = ref(null); // 引用AnalyzeButton组件
+const terminalOutput = ref(null); // 引用TerminalOutput组件
 
 // 计算属性
 const selectedTemplate = computed(() => {
@@ -498,11 +509,67 @@ const handleAnalyze = async () => {
       // 解析成功，处理解析结果
       console.log('解析结果:', analyzeResponse.data.data);
       toast.success(t('nard.analyze.success'));
-      // 这里可以添加解析成功后的处理逻辑
+      
+      // 在终端输出中显示解析结果
+      if (terminalOutput.value) {
+        // 清空之前的输出
+        terminalOutput.value.clear();
+        
+        // 添加解析成功的消息
+        terminalOutput.value.addLines(`${t('nard.terminal.parseSuccess')}: ${selectedFile.value.name} ${t('nard.terminal.using')} ${selectedTemplate.value.title}`);
+        terminalOutput.value.addLines('------------------------');
+        
+        // 显示解析结果
+        const result = analyzeResponse.data.data;
+        
+        // 显示原始响应数据
+        terminalOutput.value.addLines(t('nard.terminal.originalData') + ':');
+        terminalOutput.value.addLines(selectedFile.value.content);
+        terminalOutput.value.addLines('');
+        
+        // 显示解析后的数据
+        terminalOutput.value.addLines(t('nard.terminal.parseResult') + ':');
+        
+        // 如果结果是对象，格式化显示
+        if (typeof result === 'object') {
+          // 递归处理解析结果
+          const processResult = (data, prefix = '') => {
+            if (Array.isArray(data)) {
+              data.forEach((item, index) => {
+                if (typeof item === 'object' && item !== null) {
+                  terminalOutput.value.addLines(`${prefix}[${index}]:`);
+                  processResult(item, `${prefix}  `);
+                } else {
+                  terminalOutput.value.addLines(`${prefix}[${index}]: ${item}`);
+                }
+              });
+            } else if (typeof data === 'object' && data !== null) {
+              Object.entries(data).forEach(([key, value]) => {
+                if (typeof value === 'object' && value !== null) {
+                  terminalOutput.value.addLines(`${prefix}${key}:`);
+                  processResult(value, `${prefix}  `);
+                } else {
+                  terminalOutput.value.addLines(`${prefix}${key}: ${value}`);
+                }
+              });
+            }
+          };
+          
+          processResult(result);
+        } else {
+          // 如果是字符串或其他类型，直接显示
+          terminalOutput.value.addLines(String(result));
+        }
+      }
     } else {
       // 解析失败，处理错误
       console.error('解析失败:', analyzeResponse.data.message);
       toast.error(analyzeResponse.data.message || t('nard.analyze.error'));
+      
+      // 在终端输出中显示错误信息
+      if (terminalOutput.value) {
+        terminalOutput.value.addLines(`${t('nard.terminal.error')}: ${analyzeResponse.data.message || t('nard.analyze.error')}`);
+      }
     }
     
     // 恢复按钮状态
@@ -534,6 +601,14 @@ const handleAnalyzingComplete = () => {
 onMounted(async () => {
   // 先加载模板
   await loadTemplates();
+  
+  // 初始化终端输出
+  if (terminalOutput.value) {
+    terminalOutput.value.addLines(t('nard.terminal.welcome'));
+    terminalOutput.value.addLines(t('nard.terminal.instruction'));
+    terminalOutput.value.addLines('------------------------');
+    terminalOutput.value.addLines(t('nard.terminal.ready'));
+  }
   
   // 监听窗口大小变化，更新滚动条
   const handleResize = () => {

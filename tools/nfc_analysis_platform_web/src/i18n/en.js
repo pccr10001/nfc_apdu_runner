@@ -69,23 +69,23 @@ export default {
   },
   nard: {
     title: 'NARD',
-    description: 'NFC Apdu Runner Response Decoder for connecting to Flipper Zero devices and performing NFC card operations.',
+    description: 'NFC Apdu Runner Response Decoder, used to connect Flipper Zero devices and perform NFC card operations.',
     deviceSelector: {
       title: 'Flipper Devices',
-      loading: 'Loading devices...',
+      loading: 'Loading device list...',
       noDevices: 'No devices detected',
       retry: 'Retry',
       errorLoading: 'Failed to load devices',
       autoSelect: 'Auto-select device',
-      serialDevice: 'Serial Device',
+      serialDevice: 'Serial device',
       deviceNotFound: 'Flipper Zero device not found'
     },
     responseFiles: {
       title: 'Response Files',
-      description: 'Select a response file from Flipper Zero to analyze',
-      loading: 'Loading files...',
+      description: 'Select a response file from Flipper Zero for analysis',
+      loading: 'Loading file list...',
       noFiles: 'No response files found',
-      errorLoading: 'Failed to load files',
+      errorLoading: 'Failed to load file list',
       errorLoadingContent: 'Failed to load file content'
     },
     status: {
@@ -94,20 +94,31 @@ export default {
       scanning: 'Scanning...',
       loading: 'Loading...',
       noDevice: 'No device detected',
-      deviceAvailable: 'Device available (Auto-select)',
+      deviceAvailable: 'Device available (auto-select)',
       deviceSelected: 'Device selected: {device}',
       connected: 'Connected'
     },
     templates: {
-      title: 'APDU Analysis Templates',
+      title: 'APDU Parse Templates',
       description: 'Select a template to parse APDU response data',
       id: 'Filename',
-      content: 'Template Content',
+      content: 'Content',
       use: 'View',
       detail: 'Template Details',
       loading: 'Loading templates...',
       empty: 'No templates available',
-      loadError: 'Failed to load templates'
+      loadError: 'Failed to load template'
+    },
+    terminal: {
+      title: 'Parse Results',
+      welcome: 'Welcome to NFC Apdu Runner Response Decoder',
+      instruction: 'Please select a device, response file, and parse template, then click "Analyze Data"',
+      ready: 'System ready',
+      originalData: 'Original Response Data',
+      parseResult: 'Parse Result',
+      parseSuccess: 'Parse successful',
+      using: 'using template',
+      error: 'Error'
     },
     grid: {
       scanning: 'Scanning for NFC cards...',

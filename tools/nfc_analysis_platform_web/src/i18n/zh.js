@@ -109,6 +109,17 @@ export default {
       empty: '暂无可用模板',
       loadError: '加载模板失败'
     },
+    terminal: {
+      title: '解析结果',
+      welcome: '欢迎使用 NFC Apdu Runner 响应解码器',
+      instruction: '请选择设备、响应文件和解析模板，然后点击"解析数据"按钮',
+      ready: '系统就绪',
+      originalData: '原始响应数据',
+      parseResult: '解析结果',
+      parseSuccess: '解析成功',
+      using: '使用模板',
+      error: '错误'
+    },
     grid: {
       scanning: '正在扫描 NFC 卡片...',
       empty: '未发现 NFC 卡片，请将卡片靠近设备'
