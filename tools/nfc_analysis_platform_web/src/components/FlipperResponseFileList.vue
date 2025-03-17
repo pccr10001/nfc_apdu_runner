@@ -103,7 +103,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['file-selected', 'file-content-loaded']);
+const emit = defineEmits(['file-selected']);
 
 const files = ref([]);
 const selectedFileId = ref('');
@@ -201,9 +201,6 @@ const selectFile = async (file) => {
         ...file,
         content: selectedFileContent.value
       });
-      
-      // 发送文件内容加载完成事件
-      emit('file-content-loaded', selectedFileContent.value);
     } else {
       // 处理API错误
       error.value = response.data.message || t('nard.responseFiles.errorLoadingContent');

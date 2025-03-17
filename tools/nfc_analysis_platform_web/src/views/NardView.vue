@@ -39,7 +39,6 @@
             :useSerial="selectedDevice ? selectedDevice.is_serial : false"
             :disabled="deviceStatus === 'no-device'"
             @file-selected="handleFileSelected"
-            @file-content-loaded="handleFileContentLoaded"
           />
         </div>
       </div>
@@ -76,14 +75,6 @@
             >
             </NfcCard>
           </NfcCardGrid>
-        </div>
-        
-        <!-- 响应文件内容和解析结果 -->
-        <div v-if="selectedFile" class="ark-panel p-4 mt-6">
-          <h3 class="text-lg font-medium mb-3">{{ t('nard.responseFiles.title') }}</h3>
-          <div class="bg-ark-panel rounded-lg p-3 overflow-x-auto">
-            <pre class="text-xs font-mono whitespace-pre-wrap">{{ selectedFile.content }}</pre>
-          </div>
         </div>
       </div>
     </div>
@@ -206,12 +197,6 @@ const handleDeviceStatusChanged = (status) => {
 // 处理文件选择
 const handleFileSelected = (file) => {
   selectedFile.value = file;
-};
-
-// 处理文件内容加载完成
-const handleFileContentLoaded = (content) => {
-  // 可以在这里处理文件内容，例如解析或显示
-  console.log('文件内容加载完成，长度:', content ? content.length : 0);
 };
 
 // 获取状态文本

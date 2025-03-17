@@ -86,9 +86,7 @@ export default {
       loading: '正在加载文件列表...',
       noFiles: '未找到响应文件',
       errorLoading: '加载文件列表失败',
-      errorLoadingContent: '加载文件内容失败',
-      fileSize: '大小',
-      fileDate: '日期'
+      errorLoadingContent: '加载文件内容失败'
     },
     status: {
       title: '状态',

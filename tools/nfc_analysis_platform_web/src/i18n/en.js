@@ -86,9 +86,7 @@ export default {
       loading: 'Loading files...',
       noFiles: 'No response files found',
       errorLoading: 'Failed to load files',
-      errorLoadingContent: 'Failed to load file content',
-      fileSize: 'Size',
-      fileDate: 'Date'
+      errorLoadingContent: 'Failed to load file content'
     },
     status: {
       title: 'Status',
