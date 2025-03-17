@@ -30,7 +30,7 @@
         </div>
         
         <!-- 响应文件列表 -->
-        <div class="mt-6">
+        <div class="mt-6 ark-panel">
           <FlipperResponseFileList
             ref="responseFileList"
             :title="t('nard.responseFiles.title')"

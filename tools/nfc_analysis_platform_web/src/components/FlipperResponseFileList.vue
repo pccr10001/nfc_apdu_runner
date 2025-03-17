@@ -47,7 +47,7 @@
           v-for="file in files" 
           :key="file.id" 
           class="file-item"
-          :class="{ 'selected': selectedFileId === file.id }"
+          :class="{ 'selected': selectedFileId === file.id, 'disabled': disabled }"
           @click="selectFile(file)"
         >
           <div class="file-icon">
@@ -264,10 +264,9 @@ defineExpose({
 
 <style scoped>
 .response-file-list-container {
-  background-color: var(--ark-panel);
-  border: 1px solid var(--ark-border);
-  border-radius: 0.5rem;
+  background-color: rgba(22, 27, 34, 0.7);
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 .response-file-list-container.disabled {
@@ -279,52 +278,54 @@ defineExpose({
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--ark-border);
+  padding: 12px 16px;
+  background-color: rgba(28, 33, 40, 0.7);
+  border-bottom: 1px solid rgba(33, 38, 45, 1);
 }
 
 .response-file-list-title {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--ark-text);
   margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(201, 209, 217, 1);
 }
 
 .refresh-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.375rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
   background-color: transparent;
-  border: none;
-  color: var(--ark-text-secondary);
+  border: 1px solid rgba(33, 38, 45, 1);
+  color: rgba(201, 209, 217, 0.8);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .refresh-button:hover {
-  color: var(--ark-text);
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(33, 38, 45, 0.8);
+  color: rgba(201, 209, 217, 1);
+  border-color: rgba(56, 189, 248, 0.4);
 }
 
 .refresh-button:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .refresh-icon {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 18px;
+  height: 18px;
 }
 
 .refreshing .refresh-icon {
-  animation: spin 1s linear infinite;
+  animation: spin 1.2s linear infinite;
 }
 
 .response-file-list-content {
-  padding: 0.5rem;
+  padding: 16px;
   max-height: 300px;
   overflow-y: auto;
 }
@@ -374,32 +375,36 @@ defineExpose({
   padding: 0.75rem;
   border-radius: 0.375rem;
   background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .file-item:hover {
   background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(56, 189, 248, 0.2);
 }
 
 .file-item.selected {
   background-color: rgba(56, 189, 248, 0.1);
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-color: rgba(56, 189, 248, 0.6);
 }
 
 .file-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  margin-right: 0.75rem;
-  color: var(--ark-blue-light);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: rgba(28, 33, 40, 0.7);
+  margin-right: 12px;
 }
 
 .file-icon svg {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 20px;
+  height: 20px;
+  color: rgba(56, 189, 248, 0.8);
 }
 
 .file-info {
@@ -408,24 +413,48 @@ defineExpose({
 }
 
 .file-name {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--ark-text);
-  margin-bottom: 0.25rem;
+  color: rgba(201, 209, 217, 1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .file-select-indicator {
-  display: none;
-  width: 1.5rem;
-  height: 1.5rem;
-  color: var(--ark-blue-light);
+  width: 24px;
+  height: 24px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.file-select-indicator svg {
+  width: 24px;
+  height: 24px;
+  color: rgba(56, 189, 248, 0.8);
 }
 
 .file-item.selected .file-select-indicator {
-  display: block;
+  opacity: 1;
+}
+
+/* 自定义滚动条 */
+.response-file-list-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.response-file-list-content::-webkit-scrollbar-track {
+  background: rgba(22, 27, 34, 0.3);
+  border-radius: 3px;
+}
+
+.response-file-list-content::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.3);
+  border-radius: 3px;
+}
+
+.response-file-list-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.5);
 }
 
 @keyframes spin {
