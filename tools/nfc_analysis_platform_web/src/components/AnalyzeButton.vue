@@ -250,6 +250,8 @@ defineExpose({
   z-index: 1;
   opacity: 0;
   transition: opacity 0.3s ease;
+  overflow: hidden;
+  border-radius: 8px;
 }
 
 .analyze-button.enabled:hover .button-circuit-lines,
@@ -259,77 +261,202 @@ defineExpose({
 
 .circuit-line {
   position: absolute;
-  background-color: currentColor;
-  opacity: 0.2;
 }
 
+/* 主要扫描线 */
 .line-1 {
-  top: 10px;
-  left: 50%;
-  width: 40%;
-  height: 1px;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 4px,
+    rgba(56, 189, 248, 0.03) 4px,
+    rgba(56, 189, 248, 0.03) 5px
+  );
+  animation: hologram-scan 8s infinite linear;
 }
 
+/* 水平扫描光束 */
 .line-2 {
-  bottom: 10px;
-  left: 50%;
-  width: 60%;
-  height: 1px;
-  transform: translateX(-50%);
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(56, 189, 248, 0.01) 20%, 
+    rgba(56, 189, 248, 0.1) 50%,
+    rgba(56, 189, 248, 0.01) 80%,
+    transparent 100%
+  );
+  animation: hologram-sweep 3s infinite ease-in-out;
 }
 
+/* 脉冲效果 */
 .line-3 {
-  top: 50%;
-  left: 10px;
-  width: 1px;
-  height: 40%;
-  transform: translateY(-50%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(56, 189, 248, 0.08) 0%, transparent 70%);
+  animation: hologram-pulse 4s infinite ease-in-out;
 }
 
+/* 网格背景 */
 .line-4 {
-  top: 50%;
-  right: 10px;
-  width: 1px;
-  height: 60%;
-  transform: translateY(-50%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(0deg, transparent 49.5%, rgba(56, 189, 248, 0.05) 49.5%, rgba(56, 189, 248, 0.05) 50.5%, transparent 50.5%),
+    linear-gradient(90deg, transparent 49.5%, rgba(56, 189, 248, 0.05) 49.5%, rgba(56, 189, 248, 0.05) 50.5%, transparent 50.5%);
+  background-size: 15px 15px;
+  animation: hologram-grid 15s infinite linear;
 }
 
-.analyze-button.enabled:hover .circuit-line,
-.analyze-button.analyzing .circuit-line {
-  animation: circuit-glow 2s infinite;
+/* 添加更多全息元素 */
+.analyze-button.enabled:hover .button-circuit-lines::before,
+.analyze-button.analyzing .button-circuit-lines::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    /* 数据流线 */
+    linear-gradient(90deg, transparent 30%, rgba(56, 189, 248, 0.1) 50%, transparent 70%),
+    linear-gradient(90deg, transparent 40%, rgba(56, 189, 248, 0.07) 50%, transparent 60%),
+    linear-gradient(90deg, transparent 45%, rgba(56, 189, 248, 0.05) 50%, transparent 55%),
+    /* 垂直数据流线 */
+    linear-gradient(0deg, transparent 30%, rgba(56, 189, 248, 0.1) 50%, transparent 70%),
+    linear-gradient(0deg, transparent 40%, rgba(56, 189, 248, 0.07) 50%, transparent 60%),
+    /* 对角数据流线 */
+    linear-gradient(45deg, transparent 49.8%, rgba(56, 189, 248, 0.1) 49.9%, rgba(56, 189, 248, 0.1) 50.1%, transparent 50.2%),
+    linear-gradient(-45deg, transparent 49.8%, rgba(56, 189, 248, 0.1) 49.9%, rgba(56, 189, 248, 0.1) 50.1%, transparent 50.2%);
+  
+  background-size: 
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100px 100px,
+    100px 100px;
+  
+  opacity: 0.7;
+  animation: hologram-data-flow 10s infinite linear;
 }
 
-.analyze-button.enabled:hover .line-1 {
-  animation-delay: 0s;
+/* 添加数据点和处理节点 */
+.analyze-button.enabled:hover .button-circuit-lines::after,
+.analyze-button.analyzing .button-circuit-lines::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    /* 数据处理节点 */
+    radial-gradient(circle at 20% 30%, rgba(56, 189, 248, 0.2) 0, rgba(56, 189, 248, 0.2) 1px, transparent 3px),
+    radial-gradient(circle at 40% 40%, rgba(56, 189, 248, 0.2) 0, rgba(56, 189, 248, 0.2) 1px, transparent 3px),
+    radial-gradient(circle at 60% 60%, rgba(56, 189, 248, 0.2) 0, rgba(56, 189, 248, 0.2) 1px, transparent 3px),
+    radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.2) 0, rgba(56, 189, 248, 0.2) 1px, transparent 3px),
+    radial-gradient(circle at 15% 70%, rgba(56, 189, 248, 0.2) 0, rgba(56, 189, 248, 0.2) 1px, transparent 3px),
+    radial-gradient(circle at 75% 75%, rgba(56, 189, 248, 0.2) 0, rgba(56, 189, 248, 0.2) 1px, transparent 3px),
+    /* 主要处理节点 */
+    radial-gradient(circle at 30% 50%, rgba(56, 189, 248, 0) 0, rgba(56, 189, 248, 0.3) 5px, transparent 10px),
+    radial-gradient(circle at 70% 50%, rgba(56, 189, 248, 0) 0, rgba(56, 189, 248, 0.3) 5px, transparent 10px);
+  
+  background-repeat: no-repeat;
+  animation: hologram-nodes-pulse 4s infinite alternate;
 }
 
-.analyze-button.enabled:hover .line-2 {
-  animation-delay: 0.5s;
+/* 添加移动的数据点 */
+.analyze-button.enabled:hover .circuit-line::after,
+.analyze-button.analyzing .circuit-line::after {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background-color: rgba(56, 189, 248, 1);
+  box-shadow: 0 0 4px rgba(56, 189, 248, 0.8);
+  filter: blur(0.5px);
 }
 
-.analyze-button.enabled:hover .line-3 {
-  animation-delay: 1s;
+.analyze-button.enabled:hover .line-1::after,
+.analyze-button.analyzing .line-1::after {
+  top: 25%;
+  animation: hologram-particle-horizontal 2s infinite linear;
 }
 
-.analyze-button.enabled:hover .line-4 {
-  animation-delay: 1.5s;
+.analyze-button.enabled:hover .line-2::after,
+.analyze-button.analyzing .line-2::after {
+  top: 75%;
+  animation: hologram-particle-horizontal 3s infinite linear reverse;
 }
 
-.analyze-button.analyzing .line-1 {
-  animation-delay: 0s;
+.analyze-button.enabled:hover .line-3::after,
+.analyze-button.analyzing .line-3::after {
+  left: 25%;
+  top: 0;
+  animation: hologram-particle-vertical 2.5s infinite linear;
 }
 
-.analyze-button.analyzing .line-2 {
-  animation-delay: 0.5s;
+.analyze-button.enabled:hover .line-4::after,
+.analyze-button.analyzing .line-4::after {
+  left: 75%;
+  top: 0;
+  animation: hologram-particle-vertical 3.5s infinite linear reverse;
 }
 
-.analyze-button.analyzing .line-3 {
-  animation-delay: 1s;
+/* 全息动画关键帧 */
+@keyframes hologram-scan {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100px; }
 }
 
-.analyze-button.analyzing .line-4 {
-  animation-delay: 1.5s;
+@keyframes hologram-sweep {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(200%); }
+}
+
+@keyframes hologram-pulse {
+  0% { opacity: 0.3; transform: scale(0.95); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+  100% { opacity: 0.3; transform: scale(0.95); }
+}
+
+@keyframes hologram-grid {
+  0% { background-position: 0 0; }
+  100% { background-position: 30px 30px; }
+}
+
+@keyframes hologram-data-flow {
+  0% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0px 0px, 0px 0px; }
+  50% { background-position: 100% 0%, -100% 0%, 100% 0%, 0% 100%, 0% -100%, 50px 50px, -50px 50px; }
+  100% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 100px 100px, -100px 100px; }
+}
+
+@keyframes hologram-nodes-pulse {
+  0% { opacity: 0.5; transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1.02); }
+}
+
+@keyframes hologram-particle-horizontal {
+  0% { left: 0; }
+  100% { left: 100%; }
+}
+
+@keyframes hologram-particle-vertical {
+  0% { top: 0; }
+  100% { top: 100%; }
 }
 
 /* 解析指示器 */
