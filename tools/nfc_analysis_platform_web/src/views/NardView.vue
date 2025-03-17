@@ -549,7 +549,13 @@ const handleAnalyze = async () => {
                   terminalOutput.value.addLines(`${prefix}${key}:`);
                   processResult(value, `${prefix}  `);
                 } else {
-                  terminalOutput.value.addLines(`${prefix}${key}: ${value}`);
+                  // 如果是output字段，在值前添加一个换行符
+                  if (key === 'output') {
+                    terminalOutput.value.addLines(`${prefix}${key}:`);
+                    terminalOutput.value.addLines(`${prefix}${value}`);
+                  } else {
+                    terminalOutput.value.addLines(`${prefix}${key}: ${value}`);
+                  }
                 }
               });
             }
