@@ -12,6 +12,7 @@ import (
 	"github.com/spensercai/nfc_apdu_runner/tools/nfc_analysis_platform/cmd/nard"
 	"github.com/spensercai/nfc_apdu_runner/tools/nfc_analysis_platform/cmd/tlv"
 	"github.com/spensercai/nfc_apdu_runner/tools/nfc_analysis_platform/cmd/wapi"
+	"github.com/spensercai/nfc_apdu_runner/tools/nfc_analysis_platform/cmd/wapp"
 	"github.com/spf13/cobra"
 )
 
@@ -43,4 +44,5 @@ func init() {
 	rootCmd.AddCommand(nard.NardCmd)
 	rootCmd.AddCommand(tlv.TlvCmd)
 	rootCmd.AddCommand(wapi.WapiCmd)
+	rootCmd.AddCommand(wapp.WappCmd)
 }
