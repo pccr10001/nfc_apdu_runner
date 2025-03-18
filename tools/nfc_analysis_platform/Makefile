@@ -10,7 +10,7 @@ BINARY_NAME=nfc_analysis_platform
 BINARY_UNIX=$(BINARY_NAME)_linux
 BINARY_MACOS=$(BINARY_NAME)_macos
 
-.PHONY: build install clean generate-api run-api tests-all tests-api tests-cmd
+.PHONY: build install clean generate-api run-api tests-all tests-api tests-cmd build-web
 
 # 项目名称
 PROJECT_NAME := nfc_analysis_platform
@@ -18,10 +18,17 @@ PROJECT_NAME := nfc_analysis_platform
 # 目录
 BIN_DIR := $(HOME)/bin
 FORMAT_DIR := $(BIN_DIR)/format
+WEB_DIR := web
+WEB_SRC_DIR := ../nfc_analysis_platform_web
 
 # Go命令
 GO := go
 GOFLAGS :=
+
+# Web构建工具
+NPM := npm
+# 强制使用npm
+WEB_CMD := $(NPM)
 
 # 设置默认值
 LOG_ERROR ?= true
@@ -48,6 +55,12 @@ clean:
 	@rm -f $(BINARY_MACOS)
 	@echo "清理完成！"
 
+# 清理Web构建文件
+clean-web:
+	@echo "清理Web构建文件..."
+	@rm -rf $(WEB_DIR)/*
+	@echo "Web清理完成！"
+
 # 生成API代码
 generate-api:
 	@echo "生成API代码..."
@@ -64,6 +77,20 @@ run-api: build
 	@echo "启动API服务器..."
 	@./$(PROJECT_NAME) wapi
 
+# 构建Web项目
+build-web:
+	@echo "构建Web项目..."
+	@if [ ! -d "$(WEB_SRC_DIR)" ]; then \
+		echo "错误: Web源代码目录 $(WEB_SRC_DIR) 不存在"; \
+		exit 1; \
+	fi
+	@mkdir -p $(WEB_DIR)
+	@cd $(WEB_SRC_DIR) && $(WEB_CMD) install
+	@cd $(WEB_SRC_DIR) && $(WEB_CMD) run build
+	@echo "复制Web构建文件到 $(WEB_DIR)..."
+	@cp -r $(WEB_SRC_DIR)/dist/* $(WEB_DIR)/
+	@echo "Web项目构建完成！"
+
 # 测试目标
 tests-all: tests-cmd tests-api
 	@echo "所有测试完成！"
@@ -76,8 +103,8 @@ tests-cmd:
 	@echo "运行命令行测试..."
 	@LOG_ERROR=$(LOG_ERROR) $(GO) test $(GOFLAGS) -v ./tests/cmd_tests/...
 
-# 默认目标
-all: build
+# 默认目标现在包括Web构建
+all: build build-web
 
 # 帮助信息
 help:
@@ -85,8 +112,10 @@ help:
 	@echo "  build         - 构建项目"
 	@echo "  install       - 安装到 $(BIN_DIR)"
 	@echo "  clean         - 清理构建文件"
+	@echo "  clean-web     - 清理Web构建文件"
 	@echo "  generate-api  - 生成API代码"
 	@echo "  run-api       - 运行API服务器"
+	@echo "  build-web     - 构建Web项目"
 	@echo "  tests-all     - 运行所有测试"
 	@echo "  tests-api     - 仅运行API测试"
 	@echo "  tests-cmd     - 仅运行命令行测试"
@@ -104,4 +133,4 @@ build-macos:
 
 build-all: build-linux build-windows build-macos
 
-.PHONY: all build test clean run deps build-linux build-windows build-mac build-macos build-all 
+.PHONY: all build test clean run deps build-linux build-windows build-mac build-macos build-all clean-web build-web 
