@@ -6,7 +6,7 @@ NFC APDU Runner is a Flipper Zero application for reading and executing APDU com
 
 <div align="center">
 
-[![NFC APDU Runner Web Interface](https://img.youtube.com/vi/u8o0eTmCCew/0.jpg)](https://youtu.be/u8o0eTmCCew)
+[![NFC APDU Runner Web Interface](./doc_images/web_image.png)](https://youtu.be/u8o0eTmCCew)
 
 </div>
 
