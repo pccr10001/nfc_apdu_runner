@@ -11,6 +11,13 @@ https://youtu.be/u8o0eTmCCew
 </div>
 
 <div align="center">
+  <video width="70%" controls>
+    <source src="https://youtu.be/u8o0eTmCCew" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<div align="center">
   <img src="./doc_images/waiting_decode.png" width="45%" alt="NARD Waiting for Decode">
   <img src="./doc_images/emv_response.jpg" width="45%" alt="EMV Card Decoded Response">
 </div>
