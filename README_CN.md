@@ -1,6 +1,8 @@
 # NFC APDU Runner
 
-NFC APDU Runner是一个Flipper Zero应用程序，用于读取和执行NFC卡片的APDU命令。该应用程序允许用户从脚本文件中加载APDU命令，并将其发送到NFC卡片，然后查看响应结果。它还包含NARD（NFC APDU Runner响应解码器）功能，可使用自定义格式模板解析和分析APDU响应，以及TLV数据提取功能。
+NFC APDU Runner是一个Flipper Zero应用程序，用于读取和执行NFC卡片的APDU命令。该应用程序允许用户从脚本文件中加载APDU命令，并将其发送到NFC卡片，然后查看响应结果。它还包含NARD（NFC APDU Runner响应解码器）功能，可使用自定义格式模板解析和分析APDU响应，以及TLV数据提取功能。项目现已支持Web界面分析平台，用于更全面的NFC数据分析和可视化。
+
+[![NFC APDU Runner Web界面](https://img.youtube.com/vi/u8o0eTmCCew/0.jpg)](https://youtu.be/u8o0eTmCCew)
 
 <div align="center">
   <img src="./doc_images/waiting_decode.png" width="45%" alt="NARD等待解码">
@@ -15,6 +17,7 @@ NFC APDU Runner是一个Flipper Zero应用程序，用于读取和执行NFC卡�
 ## 功能特点
 
 - 支持从脚本文件加载APDU命令
+- 支持Web界面分析平台，用于全面的NFC数据分析和可视化
 - 支持多种卡类型（已实现ISO14443-4A和ISO14443-4B）
 - 用户友好的界面，提供操作提示
 - 执行日志记录，方便调试
