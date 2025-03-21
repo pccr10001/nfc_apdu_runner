@@ -15,11 +15,11 @@
       
       @keyframes pulse {
         0% { 
-          transform: translate(-50%, -50%) scale(0.95);
+          transform: scale(0.95);
           opacity: 0.7;
         }
         100% {
-          transform: translate(-50%, -50%) scale(1.05);
+          transform: scale(1.05);
           opacity: 1;
         }
       }
@@ -36,10 +36,12 @@
           r: 1.5;
         }
         10% {
+          cx: 15;
           opacity: 1;
           r: 3;
         }
         90% {
+          cx: 135;
           opacity: 1;
           r: 3;
         }
@@ -90,33 +92,38 @@
         animation: rotate3d 15s linear infinite;
         transform-origin: center;
         transform-box: fill-box;
+        transform-style: preserve-3d;
       }
       
       .ring {
         fill: none;
-        cx: 400;
-        cy: 150;
-        transform-origin: center;
+        transform-origin: center center;
       }
       
       .ring-1 {
-        stroke: rgba(56, 189, 248, 0.8);
+        stroke: rgba(56, 189, 248, 0.95);
+        stroke-width: 2.5;
         animation: pulse 2s ease-in-out infinite alternate;
+        transform-origin: center;
       }
       
       .ring-2 {
-        stroke: rgba(126, 231, 135, 0.6);
+        stroke: rgba(126, 231, 135, 0.85);
+        stroke-width: 2.5;
         animation: pulse 3s ease-in-out infinite alternate;
+        transform-origin: center;
       }
       
       .ring-3 {
-        stroke: rgba(137, 87, 229, 0.4);
+        stroke: rgba(137, 87, 229, 0.75);
+        stroke-width: 2.5;
         animation: pulse 4s ease-in-out infinite alternate;
+        transform-origin: center;
       }
       
       .nfc-symbol {
-        fill: rgba(255, 255, 255, 0.9);
-        font-size: 24px;
+        fill: rgba(255, 255, 255, 1);
+        font-size: 28px;
         font-weight: bold;
         text-anchor: middle;
         dominant-baseline: central;
@@ -137,11 +144,14 @@
       .packet-4 { animation-delay: 2.4s; }
       .packet-5 { animation-delay: 3.2s; }
       
+      .label-container {
+        animation: float 10s ease-in-out infinite alternate;
+      }
+      
       .label {
         fill: rgba(255, 255, 255, 0.9);
         font-family: monospace;
         font-size: 12px;
-        animation: float 10s ease-in-out infinite alternate;
       }
       
       .scan-line {
@@ -195,7 +205,7 @@
     </style>
     
     <!-- 渐变和滤镜定义 -->
-    <linearGradient id="scanGradient" x1="0%" y1="0%" x2="100%" y1="0%" y2="0%">
+    <linearGradient id="scanGradient" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="rgba(56, 189, 248, 0)" />
       <stop offset="50%" stop-color="rgba(56, 189, 248, 0.8)" />
       <stop offset="100%" stop-color="rgba(56, 189, 248, 0)" />
@@ -218,129 +228,135 @@
   <rect class="grid-background" width="100%" height="100%" fill="url(#grid)" opacity="0.5" />
   
   <!-- 中央NFC标志 -->
-  <g class="nfc-logo" transform="translate(400 150)">
-    <g transform="translate(-60 -60)">
-      <circle class="ring ring-1" r="48" stroke-width="2" />
-      <circle class="ring ring-2" r="60" stroke-width="2" />
-      <circle class="ring ring-3" r="72" stroke-width="2" />
-      <text class="nfc-symbol" x="60" y="60">NFC</text>
-    </g>
+  <g class="nfc-logo">
+    <circle class="ring ring-1" cx="400" cy="150" r="48" stroke-width="2" />
+    <circle class="ring ring-2" cx="400" cy="150" r="60" stroke-width="2" />
+    <circle class="ring ring-3" cx="400" cy="150" r="72" stroke-width="2" />
+    <text class="nfc-symbol" x="400" y="150">NFC</text>
   </g>
   
   <!-- 数据流 -->
   <g>
     <!-- 0度 -->
-    <g transform="translate(400 150) rotate(0)">
-      <circle class="data-packet packet-1" cy="0" r="3" />
-      <circle class="data-packet packet-2" cy="0" r="3" />
-      <circle class="data-packet packet-3" cy="0" r="3" />
-      <circle class="data-packet packet-4" cy="0" r="3" />
-      <circle class="data-packet packet-5" cy="0" r="3" />
+    <g transform="translate(400, 150) rotate(0)">
+      <line x1="0" y1="0" x2="150" y2="0" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1" />
+      <circle class="data-packet packet-1" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-2" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-3" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-4" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-5" cx="0" cy="0" r="3" />
     </g>
     
     <!-- 45度 -->
-    <g transform="translate(400 150) rotate(45)">
-      <circle class="data-packet packet-1" cy="0" r="3" />
-      <circle class="data-packet packet-2" cy="0" r="3" />
-      <circle class="data-packet packet-3" cy="0" r="3" />
-      <circle class="data-packet packet-4" cy="0" r="3" />
-      <circle class="data-packet packet-5" cy="0" r="3" />
+    <g transform="translate(400, 150) rotate(45)">
+      <line x1="0" y1="0" x2="150" y2="0" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1" />
+      <circle class="data-packet packet-1" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-2" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-3" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-4" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-5" cx="0" cy="0" r="3" />
     </g>
     
     <!-- 90度 -->
-    <g transform="translate(400 150) rotate(90)">
-      <circle class="data-packet packet-1" cy="0" r="3" />
-      <circle class="data-packet packet-2" cy="0" r="3" />
-      <circle class="data-packet packet-3" cy="0" r="3" />
-      <circle class="data-packet packet-4" cy="0" r="3" />
-      <circle class="data-packet packet-5" cy="0" r="3" />
+    <g transform="translate(400, 150) rotate(90)">
+      <line x1="0" y1="0" x2="150" y2="0" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1" />
+      <circle class="data-packet packet-1" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-2" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-3" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-4" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-5" cx="0" cy="0" r="3" />
     </g>
     
     <!-- 135度 -->
-    <g transform="translate(400 150) rotate(135)">
-      <circle class="data-packet packet-1" cy="0" r="3" />
-      <circle class="data-packet packet-2" cy="0" r="3" />
-      <circle class="data-packet packet-3" cy="0" r="3" />
-      <circle class="data-packet packet-4" cy="0" r="3" />
-      <circle class="data-packet packet-5" cy="0" r="3" />
+    <g transform="translate(400, 150) rotate(135)">
+      <line x1="0" y1="0" x2="150" y2="0" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1" />
+      <circle class="data-packet packet-1" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-2" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-3" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-4" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-5" cx="0" cy="0" r="3" />
     </g>
     
     <!-- 180度 -->
-    <g transform="translate(400 150) rotate(180)">
-      <circle class="data-packet packet-1" cy="0" r="3" />
-      <circle class="data-packet packet-2" cy="0" r="3" />
-      <circle class="data-packet packet-3" cy="0" r="3" />
-      <circle class="data-packet packet-4" cy="0" r="3" />
-      <circle class="data-packet packet-5" cy="0" r="3" />
+    <g transform="translate(400, 150) rotate(180)">
+      <line x1="0" y1="0" x2="150" y2="0" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1" />
+      <circle class="data-packet packet-1" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-2" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-3" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-4" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-5" cx="0" cy="0" r="3" />
     </g>
     
     <!-- 225度 -->
-    <g transform="translate(400 150) rotate(225)">
-      <circle class="data-packet packet-1" cy="0" r="3" />
-      <circle class="data-packet packet-2" cy="0" r="3" />
-      <circle class="data-packet packet-3" cy="0" r="3" />
-      <circle class="data-packet packet-4" cy="0" r="3" />
-      <circle class="data-packet packet-5" cy="0" r="3" />
+    <g transform="translate(400, 150) rotate(225)">
+      <line x1="0" y1="0" x2="150" y2="0" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1" />
+      <circle class="data-packet packet-1" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-2" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-3" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-4" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-5" cx="0" cy="0" r="3" />
     </g>
     
     <!-- 270度 -->
-    <g transform="translate(400 150) rotate(270)">
-      <circle class="data-packet packet-1" cy="0" r="3" />
-      <circle class="data-packet packet-2" cy="0" r="3" />
-      <circle class="data-packet packet-3" cy="0" r="3" />
-      <circle class="data-packet packet-4" cy="0" r="3" />
-      <circle class="data-packet packet-5" cy="0" r="3" />
+    <g transform="translate(400, 150) rotate(270)">
+      <line x1="0" y1="0" x2="150" y2="0" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1" />
+      <circle class="data-packet packet-1" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-2" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-3" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-4" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-5" cx="0" cy="0" r="3" />
     </g>
     
     <!-- 315度 -->
-    <g transform="translate(400 150) rotate(315)">
-      <circle class="data-packet packet-1" cy="0" r="3" />
-      <circle class="data-packet packet-2" cy="0" r="3" />
-      <circle class="data-packet packet-3" cy="0" r="3" />
-      <circle class="data-packet packet-4" cy="0" r="3" />
-      <circle class="data-packet packet-5" cy="0" r="3" />
+    <g transform="translate(400, 150) rotate(315)">
+      <line x1="0" y1="0" x2="150" y2="0" stroke="rgba(56, 189, 248, 0.2)" stroke-width="1" />
+      <circle class="data-packet packet-1" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-2" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-3" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-4" cx="0" cy="0" r="3" />
+      <circle class="data-packet packet-5" cx="0" cy="0" r="3" />
     </g>
   </g>
   
   <!-- 浮动数据标签 -->
   <g>
-    <g style="animation-delay: 0s">
-      <rect x="120" y="60" width="80" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1" />
+    <g class="label-container" style="animation-delay: 0s">
+      <rect x="120" y="60" width="100" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1" />
       <text class="label" x="130" y="76">TLV: 6F84A5</text>
     </g>
     
-    <g style="animation-delay: 2s">
-      <rect x="160" y="150" width="100" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1" />
+    <g class="label-container" style="animation-delay: 2s">
+      <rect x="160" y="150" width="120" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1" />
       <text class="label" x="170" y="166">UID: 04A5B9C2</text>
     </g>
     
-    <g style="animation-delay: 1s">
-      <rect x="560" y="90" width="120" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1" />
+    <g class="label-container" style="animation-delay: 1s">
+      <rect x="560" y="90" width="140" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1" />
       <text class="label" x="570" y="106">APDU: 00A4040007</text>
     </g>
     
-    <g style="animation-delay: 3s">
-      <rect x="520" y="180" width="80" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1" />
+    <g class="label-container" style="animation-delay: 3s">
+      <rect x="520" y="180" width="100" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1" />
       <text class="label" x="530" y="196">SW: 9000</text>
     </g>
     
-    <g style="animation-delay: 1.5s">
-      <rect x="320" y="45" width="140" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(126, 231, 135, 0.6)" stroke-width="1" />
+    <g class="label-container" style="animation-delay: 1.5s">
+      <rect x="320" y="45" width="160" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(126, 231, 135, 0.6)" stroke-width="1" />
       <text class="label" x="330" y="61">MIFARE Classic 1K</text>
     </g>
     
-    <g style="animation-delay: 2.5s">
-      <rect x="240" y="225" width="100" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(255, 123, 114, 0.6)" stroke-width="1" />
+    <g class="label-container" style="animation-delay: 2.5s">
+      <rect x="240" y="225" width="120" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(255, 123, 114, 0.6)" stroke-width="1" />
       <text class="label" x="250" y="241">Attack: Nested</text>
     </g>
     
-    <g style="animation-delay: 3.5s">
-      <rect x="680" y="120" width="110" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(255, 123, 114, 0.6)" stroke-width="1" />
+    <g class="label-container" style="animation-delay: 3.5s">
+      <rect x="680" y="120" width="130" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(255, 123, 114, 0.6)" stroke-width="1" />
       <text class="label" x="690" y="136">Attack: Darkside</text>
     </g>
     
-    <g style="animation-delay: 4s">
-      <rect x="440" y="225" width="140" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(248, 227, 161, 0.6)" stroke-width="1" />
+    <g class="label-container" style="animation-delay: 4s">
+      <rect x="440" y="225" width="170" height="24" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(248, 227, 161, 0.6)" stroke-width="1" />
       <text class="label" x="450" y="241">Key: FFFFFFFFFFFF</text>
     </g>
   </g>
@@ -370,19 +386,19 @@
   </g>
   
   <!-- 破解算法可视化 -->
-  <g transform="translate(585 265)">
-    <rect x="0" y="-60" width="200" height="60" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(255, 123, 114, 0.6)" stroke-width="1" />
-    <text class="attack-title" x="100" y="-45">MIFARE Classic Attack</text>
+  <g transform="translate(0, 0)">
+    <rect x="580" y="210" width="200" height="85" rx="4" ry="4" fill="rgba(22, 27, 34, 0.7)" stroke="rgba(255, 123, 114, 0.6)" stroke-width="1" />
+    <text class="attack-title" x="680" y="225">MIFARE Classic Attack</text>
     
     <g class="attack-steps">
-      <text x="12" y="-30"><tspan class="step-prefix" opacity="0.4">></tspan><tspan class="step" dx="5">Collect nonces</tspan></text>
-      <text x="12" y="-18"><tspan class="step-prefix" opacity="0.6">></tspan><tspan class="step" dx="5">Find key correlation</tspan></text>
-      <text x="12" y="-6"><tspan class="step-prefix" opacity="0.8">></tspan><tspan class="step" dx="5">Brute force</tspan></text>
-      <text x="12" y="6"><tspan class="step-prefix" opacity="1">></tspan><tspan class="step" dx="5">Key recovery</tspan></text>
+      <text x="592" y="240"><tspan class="step-prefix" opacity="0.4">></tspan><tspan class="step" dx="5">Collect nonces</tspan></text>
+      <text x="592" y="252"><tspan class="step-prefix" opacity="0.6">></tspan><tspan class="step" dx="5">Find key correlation</tspan></text>
+      <text x="592" y="264"><tspan class="step-prefix" opacity="0.8">></tspan><tspan class="step" dx="5">Brute force</tspan></text>
+      <text x="592" y="276"><tspan class="step-prefix" opacity="1">></tspan><tspan class="step" dx="5">Key recovery</tspan></text>
     </g>
     
-    <rect x="10" y="-5" width="180" height="4" rx="2" ry="2" fill="rgba(22, 27, 34, 0.8)" />
-    <rect class="progress-fill" x="10" y="-5" width="150" height="4" rx="2" ry="2" />
+    <rect x="590" y="285" width="180" height="2" rx="1" ry="1" fill="rgba(22, 27, 34, 0.8)" />
+    <rect class="progress-fill" x="590" y="285" width="150" height="2" rx="1" ry="1" fill="rgba(255, 123, 114, 0.8)" />
   </g>
   
   <!-- 十六进制数据流 -->
